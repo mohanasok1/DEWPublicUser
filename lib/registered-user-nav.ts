@@ -10,7 +10,7 @@
 
 export interface NavNode {
   label: string;
-  key?: "dashboard" | "project-list";
+  key?: "dashboard" | "project-list" | "observations";
   items?: NavNode[];
 }
 
@@ -47,10 +47,22 @@ export const registeredUserNav: NavNode[] = [
   // as data in `projectActions` below so they're not lost, ready to become real buttons/filters/a
   // wizard inside that screen once that's scoped, rather than sit here as more sidebar links.
   { label: "Projects", key: "project-list" },
-  {
-    label: "Observations",
-    items: [{ label: "View Level 1 Public Observation Data" }, { label: "View Level 2 Observation Data (DLA Access)" }],
-  },
+  // This is the map search screen now, same "leaf with its own key" shape as Home and Projects -
+  // it used to be "Observations", holding its Level 1/Level 2 split as inert `items` text with no
+  // real page behind either. Per direct request for a real map-search interface (draw a boundary,
+  // enter coordinates, or pick a national park; search across Projects/Events/Occurrence/
+  // Observations), built at app/pages/observations/option-1 - and, per direct feedback on that
+  // build, renamed "Observations" -> "Explore" here (the nav label only; "Observations" stays the
+  // name of the record type it searches for, one of the 4 result tabs on that page - the `key`,
+  // `keyHref`, and the route itself are also untouched, still `observations`/`/pages/observations/
+  // option-1`, since only the visible label and its icon were flagged, not the URL). The Level 1
+  // (public) vs. Level 2 (DLA-licensed) distinction from the old `items` isn't dropped - it's a
+  // real, already-documented access tier (see the "BDBSA domain research" section below) - but
+  // building actual DLA-gated result filtering is a separate, larger piece of work than this
+  // search UI itself, so today every role sees the same Level 1 results with a note pointing at
+  // "Data Licencing Agreement (DLA)" for Level 2 access, rather than fabricating a working
+  // access-tier toggle.
+  { label: "Explore", key: "observations" },
   {
     label: "Data Licencing Agreement (DLA)",
     items: [{ label: "Request New DLA" }, { label: "Manage DLA" }],
@@ -72,7 +84,7 @@ export const registeredUserNav: NavNode[] = [
 // public-user's ("Guest User") real, decided IA - a separate tree, not a filtered view of
 // registeredUserNav above, because it isn't a subset of the same shape: Home and Projects are each
 // a single destination here (no My BioData/Datasets peer tab - a signed-out guest has no personal
-// contributions or private datasets to show a second tab for), Observations drops its Level 2/DLA
+// contributions or private datasets to show a second tab for), Explore drops its Level 2/DLA
 // item entirely, and Data Licencing Agreement/Nominate Sensitive Species/Reports/Template Finder
 // don't exist as sections at all (not just hidden leaves inside them). Reuses the `dashboard`/
 // `project-list` keys since the underlying pages are the same ones registered-user's tree points
@@ -81,10 +93,9 @@ export const registeredUserNav: NavNode[] = [
 export const publicUserNav: NavNode[] = [
   { label: "Home", key: "dashboard" },
   { label: "Projects", key: "project-list" },
-  {
-    label: "Observations",
-    items: [{ label: "View Level 1 Public Observation Data" }],
-  },
+  // Same real map search screen as registered-user's Explore above - guest already only ever
+  // saw Level 1 public data, which is exactly what this screen shows for every role today.
+  { label: "Explore", key: "observations" },
 ];
 
 // The rest of the brief's "Projects" items - not nav destinations (see the comment on the
@@ -99,15 +110,16 @@ export interface ProjectAction {
 export const projectActions: ProjectAction[] = [
   { label: "View Level 1 Public Project Data" },
   { label: "View Level 2 Project Data (DLA Access)" },
+  // Built at app/pages/project-registration (reached via the "Add project" header button on every
+  // real page - see app/pages/_shared/guest-action-gate.tsx). The brief's original 5-step list
+  // (one step per restriction type) didn't match the real Figma wireframe this was built from
+  // (node 2298:179004 in the "Biodata Wireframe Presentation" file) - that source has 3 real steps,
+  // with all 5 restriction types living as sub-sections inside step 3, not 5 steps of their own.
+  // Updated to match what was actually built, per this file's own "keep documentation honest"
+  // convention.
   {
     label: "Create Project",
-    steps: [
-      "Add Project Details",
-      "Privacy and Restrictions: Embargo",
-      "Privacy and Restrictions: Sensitive Species and Location",
-      "Privacy and Restrictions: Restrict Project Metadata",
-      "Privacy and Restrictions: Request Other Restrictions",
-    ],
+    steps: ["Project Identification", "Data Collection and Storage", "Privacy and Restrictions"],
   },
   { label: "Download Project Templates" },
   // Not a standalone flow - per CONTEXT.md's "BDBSA domain research", every dataset must be

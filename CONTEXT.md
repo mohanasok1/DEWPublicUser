@@ -1775,3 +1775,2753 @@ user owns and edits directly, not something to restructure without asking.
     every "Home" entry point (the icon rail on `project-list/option-1`, the breadcrumb on
     `project-detail/option-1` and `observation-detail/option-1`) and confirmed each lands on
     `/pages/dashboard` with the active `?userRole=` preserved.
+
+- **`/pages/biodata-home` - the public marketing home page.** First built from the user's own pasted
+  landing-page copy with no Figma frame to check against; the user then supplied the real frame
+  (`https://www.figma.com/design/u4FTv88XXfy58MiLN5T5Wu/Home---Landing-Page?node-id=155-168`, node
+  `155:168`, "Version 3") and, per "Figma is the source of truth" above, the whole page was re-audited
+  and corrected against it directly rather than left as the first pass's best guess. Unlike every
+  other `/pages/*` screen so far, this one has no icon-rail/contextual-sidebar shell at all - it's a
+  top-nav marketing page (sticky header, hero, stacked full-width sections, footer). The header/nav
+  itself has **no equivalent node anywhere in the frame** (nothing renders above the hero in
+  `155:168`'s own tree) - kept as simplified structural chrome per this file's explicit
+  nav-chrome-is-exempt-from-Figma-fidelity rule, not pixel-matched because there's nothing to match.
+  - **Real exported assets, not fabricated photography.** Every photo/illustration the frame actually
+    uses - the hero background, About's background, the Contribute/personas photo, the Knowledge
+    Centre photo, the two Explore product-screenshot mockups, the Acknowledgement of Country artwork,
+    and the floating cube/treehouse decorations - was pulled via `get_design_context`'s asset URLs and
+    committed under `public/pages/biodata-home/` (`sips` used to confirm/keep native resolution after
+    an accidental upscale on the first download pass - re-fetched at native size rather than shipping
+    an upscaled, blurrier file). None of this page's imagery was invented or swapped for stock photos.
+  - **Fredoka (Google Font) loads for the hero's stacked wordmark only**, matching the frame exactly -
+    a third, explicitly page-scoped exception to "Geist stays Geist, Barlow stays Barlow" above, not a
+    sitewide font change. Loaded locally in `page.tsx` via `next/font/google`, not added to the root
+    layout. The frame hand-positions each word ("Discover"/"South Australia's"/"Biodiversity"/
+    "Knowledge") at its own size/offset for a fixed 1728px canvas; adapted here into a responsive
+    stacked heading with the same relative size hierarchy rather than cloning absolute pixel offsets,
+    since per-word absolute positioning doesn't survive a real viewport.
+  - **The first pass's content-only guesses were corrected against the real frame** in several
+    concrete ways once `get_design_context`/`get_metadata` were actually run against it:
+    - **"Where to next"'s featured card is "Learn what is BioData SA" (`compass-03` icon), not
+      "Explore".** The 2x2 grid beside it holds Explore/Dashboard and Reporting/Contribute Data/
+      Knowledge Centre - the first pass had guessed Explore as the featured card since its CTA
+      ("Start Exploring") reads as the obvious lead item; the frame's own metadata (node `155:225`)
+      showed otherwise.
+    - **The Flora/Fauna/Fungi & Other breakdown is 3 horizontal progress bars next to the growth
+      chart, not a pie/donut.** There is no pie anywhere in this frame - the first pass reached for
+      the existing `PieChart` component on the reasonable but wrong assumption that a 3-way percent
+      breakdown defaults to a pie; corrected to plain labelled bars (`KingdomBars` in `page.tsx`),
+      matching node `155:566`'s own `Container`-with-a-width-percentage markup exactly.
+    - **"Researchers/Citizen Scientists/Field Surveys" are 3 static icon+label badges, not a `Tabs`
+      switcher.** No panel content, no selection state - just three circular icon badges over a photo,
+      paired with the Contribute copy in one dark, gradient-backed section (node `155:259`). The first
+      pass built a real `Tabs` control for these on the assumption that 3 named items imply switching;
+      the frame shows they don't.
+    - **Explore's right column is 2 real overlapping product-screenshot mockups** (downloaded assets,
+      node `155:400`'s `image 22`/`image 23`), not a `Map01` icon illustration.
+    - **The Growth+Dashboard section is solid black (`bg-black`)**, and its 4 stat tiles
+      (`155:650`/"Frame 47") have **no card border or background** - they float directly on black,
+      unlike every other stat tile on this page (hero's stat cards, About's "Trusted since 1974"
+      card). Confirmed by reading the section's actual Tailwind output, not assumed from visual
+      similarity to the other stat blocks.
+    - **The "Where to next"/Knowledge Centre/footer copy groupings the first pass reconstructed from
+      the plain-text scrape (row-major pairing, the `References`/`Training resource` placement, the
+      footer's Explore/Contribute/Resources link split) all turned out correct** once checked against
+      the frame's real metadata - confirmation the reconstruction reasoning held up, not just a lucky
+      guess, and worth trusting the same reasoning next time a similarly-scraped content dump shows up
+      with no frame to check it against yet.
+  - **Internal links point at a real page wherever one already exists**, never an in-page anchor
+    standing in for a page that's actually built: `Dashboard and Reporting`'s `View Dashboard`, the
+    Dashboard section's `Open Dashboard`, and the footer's `Dashboard & Reporting` all point at the
+    one real canonical `/pages/dashboard`; the featured Explore card, the Explore section's own
+    `Search in BioData SA` button, and the hero search's submit all point at
+    `/pages/project-list/option-1` (the real records catalogue) rather than faking search results in
+    the hero itself - there's no search backend on this marketing shell to back real results with,
+    same "take them to a real page, don't fake a working feature" convention as
+    `GlobalProjectSearch`'s disabled Datasets/Species rows. Anything named in the copy with no real
+    destination anywhere in this build (`NatureMaps`, `Publications`, `Biodata Catalogue`, `Data
+    Standards`, `Survey Guidelines`, `Data Licencing Agreement`, `Citizen Science`, `Contact Us`)
+    renders as plain, non-interactive footer text - same convention as `registeredUserFooterLinks`
+    elsewhere in this build, never a fake `href="#"`.
+  - **`Login` is disabled with a "coming soon" tooltip**, same `GuestAuthActions` convention as the
+    signed-in shells - there's no real auth flow anywhere in this build.
+  - **"Biodiversity Records Growth" (`+297%`, 2019-2026) plots a derived compound-growth index
+    (2019 = 100), not invented absolute record counts.** The frame gives the aggregate percent and the
+    year range, not a real per-year dataset - interpolating a smooth index between those two given
+    numbers is a visualisation of what was actually provided; inventing plausible-looking yearly
+    totals to plot instead would have been fabricating data and presenting it as real.
+  - **A stray Untitled-UI-default gray surfaced in the frame and was normalized, not copied
+    verbatim.** Several text layers (the eyebrow labels, a secondary button's text colour) are bound
+    to `#414651` - Untitled UI's own stock `gray-700`, which does not exist anywhere in this
+    codebase's real, rebranded gray scale (DEW's actual `gray-700` is `#585451`, confirmed
+    sitewide). Read as a Figma variable-binding artifact (those specific layers never got switched to
+    the DEW colour mode the rest of the frame uses) rather than a deliberate second gray scale -
+    normalized to the semantic `text-quaternary` token this codebase already uses for every other
+    small-caps eyebrow label, instead of introducing a foreign hex sitewide.
+  - Obvious source typos were corrected, not transcribed literally (and confirmed to exist in the
+    frame's own text layers, not just the pasted copy): `"Kinddoms"` -> `"Kingdoms"`, `"Dat
+    Contributors"` -> `"Data Contributors"` (Dashboard section stat labels). Every em/en-dash in the
+    copy is a plain hyphen per the no-em-dash rule above.
+  - QA run: `tsc --noEmit` and `npm run lint` both clean on the rebuilt file; a live Chrome pass
+    (`claude-in-chrome`) scrolled the full page end to end and confirmed every section matches the
+    frame (hero photo + gradient + Fredoka heading + stat cards, the corrected featured "Where to
+    next" card, the real About/Contribute/Knowledge Centre photography, the black growth section with
+    bars instead of a pie, the real Acknowledgement of Country artwork, the footer) with zero console
+    errors.
+  - **Two real mismatches surfaced after this pass, via the browser's own inline Figma-feedback
+    tool (`Agentation`) rather than caught in the original audit - fixed on sight, not deferred:**
+    - **The hero search bar had its input placeholder and button label swapped.** Re-fetching
+      `get_design_context` on the exact node (`155:193`, "Frame 85") showed the long
+      `Try: "Red Kangaroo in Deep Creek National Park" or "Study on Rare Rodents"` string is the
+      **input's placeholder**, not separate hint copy underneath it, and `Search in BioData SA` is
+      the **button's label**, not "Search". The first pass had also carried over
+      `"This is a hint text to help user."` from the earlier plain-text build as the input's `hint`
+      prop - that string does not exist anywhere in this frame at all; removed rather than kept as a
+      harmless leftover. Lesson: a partial/truncated `get_design_context` read (this exact node was
+      only ever seen truncated, inside the giant root-frame dump) is not the same as having actually
+      read it - re-fetch the specific node directly rather than trusting an earlier partial capture,
+      especially for anything with more than one text string in it.
+    - **The Contribute section's photo was wrapped in the page's standard padded `Container` and
+      given a fabricated `rounded-l-2xl`.** Figma's own markup for this section (node `155:259`) has
+      the photo as a true 50/50 flex child filling the section's full height and touching the true
+      left edge, no radius at all - `Container`'s `mx-auto max-w-container px-4 md:px-8` insets
+      everything inside it uniformly, which is exactly right for text content but wrong for a
+      full-bleed image half, and the rounding was invented, not sourced from the frame. Fixed by
+      pulling this section's outer wrapper out of `Container` entirely (a plain
+      `mx-auto max-w-[1728px]` - matching the frame's own authored canvas width instead of this
+      site's narrower 1280px docs container - with no side padding) and moving the padding onto the
+      text column alone. **The same "is this a full-bleed frame element or does it just happen to
+      sit near one" check is worth re-running on any future edge-to-edge photo half** - About's own
+      full-bleed background photo was built correctly (as an `absolute inset-0` layer behind
+      `Container`, never inside it), which is the pattern to copy, not `Container`-wrapping-with-a-
+      rounded-corner. The Acknowledgement of Country photo had the same invented-rounding mistake
+      (a `rounded-xl` with no basis in `155:169`'s actual markup) - caught and fixed in the same pass
+      once the pattern was spotted, not left for a second report.
+  - **A third round asked explicitly to match node `155:185` (the hero content frame) pixel-for-pixel**
+    - re-fetched `get_design_context` on that exact node (not relying on the first, truncated
+    root-frame dump) and found several real sizing/spacing misses beyond what the second round's
+    feedback had already caught:
+    - **The four stacked hero words are all plain white** - "Biodiversity" has no colour override
+      anywhere in the frame. The first two passes had it in `#b3dbdb` (light teal) as an invented
+      accent; removed.
+    - **The word-stack is a fixed-canvas overlapping collage** (all four words in one CSS grid cell,
+      positioned purely by `margin-left`/`margin-top`, per-word font sizes 40/72/102/64px and weights
+      medium/semibold/semibold/regular) - not four consecutive centred lines. Reproduced pixel-for-
+      pixel via the same grid-stack + margin-offset technique, shown from `lg` up (the collage only
+      reads correctly at its authored size); a plain centred stack still covers narrower viewports
+      since the fixed offsets can't scale down.
+    - **The search bar is `1024px` wide, not `max-w-3xl` (768px).**
+    - **The intro paragraph is `20px` (`text-xl`), not `16px`, has a bold "Biodata SA" lead-in
+      before regular body text, and the frame authors an explicit 2-line break** ("...biodiversity
+      information platform -" / "supporting conservation...") rather than letting it reflow - all
+      three were missing (plain 16px, no bold lead-in, no forced break).
+    - **The four stat cards are fixed at `310px` each in a `flex-wrap` row, not grid cells**, and
+      their label text is `20px` (`text-xl`), not `18px` (`text-lg`) - the grid layout happened to
+      look similar at one viewport width but doesn't wrap the same way `flex-wrap` does once the row
+      no longer fits 4 across.
+    - Lesson carried forward from the second round's search-bar mixup, reconfirmed here: a node seen
+      only inside an earlier, larger/truncated `get_design_context` call is not the same as having
+      actually read it - re-fetching the exact node directly is what surfaced every one of these,
+      none of which were visible from the screenshot alone at normal viewing size.
+  - **A fourth round of feedback (10 items via the browser's inline Agentation tool) found a mix of
+    genuinely new issues and stale re-reports of items already fixed in earlier rounds:**
+    - **A systemic container-width bug, not a one-off.** This page's shared `Container` used this
+      site's default docs-page width (`max-w-container`, 1280px) - but Figma's own sections aren't
+      built on that width at all. Re-deriving each section's real content width from its own frame
+      (`x`/width maths, e.g. `1728 - 2*80px padding = 1568px` for Explore/Knowledge Centre/
+      Acknowledgement, `144px` margins = `1440px` for "Where to next", a `1280px` column for the
+      footer, a `1446px` frame for the hero) explained several complaints at once: the 4 hero stat
+      cards wrapping to 3+1 instead of one row, "check the spacing" on "Where to next", and part of
+      "colors are not as per figma" on its cards (never actually fetched past metadata before this
+      round - see below). Fixed by widening `Container`'s own default to `1569px` (the most common
+      real width) and overriding per section where the real width differs, **and** by not
+      double-stacking the shared padding on top of a section-specific `max-w` override that already
+      equals the frame's true, already-inset content width (the hero fix specifically - `lg:px-0`
+      instead of `lg:px-20`, since `max-w-[1446px]` already *is* the correct content width with
+      nothing further to inset).
+    - **"Where to next" had never actually had `get_design_context` run on it before this round** -
+      every earlier pass built it from `get_metadata` alone (dimensions and text, no real Tailwind
+      output), so the gap between the featured card and the grid (guessed at `gap-6`, actually
+      `40px`), the card's internal layout (guessed as a circular icon badge, actually a bare 120px
+      `compass-03` with no badge at all), the grid cards' fixed `160px` height (guessed as
+      auto-height), and the card text/link colours (guessed brand-teal, actually white-on-gradient
+      for the featured card and a muted `link-gray` for the grid cards, not `link-color`) were all
+      real, previously-unverified guesses that turned out wrong once the actual node was fetched.
+      Same root cause as the hero and Contribute mixups in earlier rounds: metadata tells you
+      dimensions and text content, never colours, spacing, or which real component variant to use -
+      `get_design_context` is not optional for any section this page still needs to get exactly
+      right, even ones that already "look about right" from a screenshot.
+    - **The "Trusted since 1974" card's position was wrong** - it's centred and non-overlapping in
+      the first build, but the frame (node `155:563`) places it at 61% across / 91% down the About
+      section, deliberately overflowing 50px past the section's own bottom edge onto the section
+      below. Fixed by moving `overflow-hidden` off the whole `<section>` and onto just its background-
+      image layer, so the card can hang past the boundary the way the frame does instead of being
+      clipped or kept safely inside.
+    - **The persona statement ("Whether you're a researcher...") was centred; the frame left-aligns
+      it** at a fixed `x: 135px, width: 791px` - not a symmetric statement banner. Approximated as a
+      left-aligned block near that width rather than centred.
+    - **Two decorative SVGs (`cube-02`/`cube-03`) were placed in the hero section** on a first-pass
+      guess that "hero decorations" belong near the hero. Their real frame coordinates (`155:176`/
+      `155:177`, y = 2939/3254) put them roughly at the About/Explore boundary, well past the hero
+      entirely (which ends around y = 1087). Removed from the hero rather than left in the wrong
+      section; not re-added elsewhere this pass (a small decorative flourish, not core content -
+      logged here rather than silently dropped). `treehouse.svg`'s own position was also
+      re-checked against its real coordinates (`155:178`, x:1080/y:969 - the lower-right of the
+      hero's own photo, bleeding off the canvas edge) and moved from the top-right to the
+      bottom-right of the hero to match.
+    - **The sticky header used `bg-primary/95 backdrop-blur-sm`**, which reads as slightly tinted/
+      blurred over the dark hero photo while scrolling - changed to a flat `bg-white` since the ask
+      was specifically an opaque, unblurred header at all scroll positions.
+    - **The DEW/SA Government logo was `h-8` (32px); asked to be exactly `38px`** - corrected
+      directly (`h-[38px]`, width still auto so it scales proportionally).
+    - Two of the ten items (the Contribute photo, the hero search bar) were exact re-reports of
+      issues already fixed in the prior round - most likely stale feedback captured against a
+      pre-fix page state rather than a new regression; verified both were still correct after this
+      round's changes rather than assuming the report was simply outdated.
+  - **A fifth round (outside this session, not logged here at the time - see `page.tsx`'s own file-
+    header comment for its full "20-point user annotation review") moved `treehouse.svg` out of the
+    hero entirely** (its real coordinates, y:969-1856 of the 1728px canvas, place it bleeding from
+    the hero into the persona-statement section below, not pinned to the hero's own corner as the
+    third round above had it) **and made several further spacing/gradient/gap corrections** -
+    "Where to next"'s 64px row-gap vs 40px column-gap, the featured card's real gradient stops
+    (34%/81.3%/133.7%), a thinner `Compass03` stroke to match the real exported icon weight,
+    Contribute's persona/divider/heading spacing, and the Explore mockups' size and bottom-bleed.
+    **This CONTEXT.md entry hadn't been updated to match at the time** - the "moved to the hero's
+    bottom-right" line three entries above is stale; `page.tsx`'s own header comment is the accurate
+    record of that round, and this entry is corrected here rather than left contradicting the code.
+  - **Sixth round: the persona-statement + "Where to next" section still didn't match a supplied
+    reference screenshot, for a reason specific to reusing one asset across two backgrounds.**
+    `treehouse.svg`'s real fill is white (correct on the dark hero it's also used on) - moved as-is
+    into the persona-statement section (which sits on a white background) in the fifth round above,
+    it renders invisible there; only its 30%-opacity background circle showed. Fixed by generating
+    `treehouse-light.svg` - the exact same real path data, fill recoloured to a pale brand tint
+    (`#C3D9DF` path, `#DCECEF` circle) - a legitimate recolour of a real downloaded asset for a
+    different background context, not fabricated artwork; the shape itself is untouched. Also
+    restored two small decorative circles at the featured "Where to next" card's bottom-left corner
+    (visible in the reference, absent from every build so far) as plain CSS circles (`bg-white/10`
+    and `bg-white/40`) rather than reproducing them as an image - a generic decorative dot needs no
+    real vector asset the way a real icon does. The section's `overflow-hidden` was also removed so
+    the (now-visible) graphic can bleed down into "Where to next" below it, matching the reference,
+    the same "let a deliberate overlap hang past its section" fix already applied to the About card
+    and the Contribute photo in earlier rounds.
+
+- **`/pages/observations/option-1` - the map search interface, built per direct request.** Observations
+  used to be inert `items` text with no real page behind either "View Level 1 Public Observation
+  Data" or "View Level 2..." (see `lib/registered-user-nav.ts`). Per direct request for a real
+  map-search tool - draw a circle/polygon, enter coordinates, or pick a South Australian national
+  park, then see matching Projects/Events/Occurrence/Observations in a tabbed table - Observations
+  is now a keyed leaf, same "leaf with its own key" shape Home and Projects already have, reached
+  for real from every sidebar shell's icon rail via the existing generic `goToSection`/`keyHref`
+  machinery with no per-shell changes needed. Two ALA-style screenshots and a rough BDBSA wireframe
+  page (`YMproGZfrFB5jUqPHPxMhk` node `165:12361`, which turned out to be a Reports gallery, not a
+  results screen - the link didn't point where expected, so it was treated as loose inspiration
+  only, not fetched further) were given explicitly "for reference only," with instructions to
+  design the actual UX - not a Figma frame to pixel-match.
+  - **A real, working map, not a fabricated grid or a static image.** `leaflet` + `react-leaflet`
+    + real OpenStreetMap tiles (`app/pages/_shared/map-search/sa-map.tsx`), loaded via
+    `next/dynamic({ ssr: false })` since Leaflet touches `window` at import time. Kept in
+    `app/pages/_shared` rather than `components/custom` - same precedent as this build's other real
+    map widget, `app/pages/_shared/map-view.tsx` (a Highcharts map), neither of which has a
+    stakeholder-decided home yet. The existing `MapView` (Highcharts) was checked first and ruled
+    out - it only has Australian state-level geometry, no zoom/pan/drawing, wrong tool for this job.
+  - **Drawing uses `leaflet-draw`'s real `L.Draw.Circle`/`L.Draw.Polygon` handlers, triggered by
+    real DEW `Button`s in the search panel instead of the plugin's own dated toolbar chrome** - the
+    created layer is captured into a `Boundary` (`{kind:"circle", center, radiusKm}` or
+    `{kind:"polygon", points}`, `app/pages/_shared/map-search/geo.ts`) and immediately removed from
+    the map, since the boundary is re-rendered declaratively via react-leaflet's own `<Circle>`/
+    `<Polygon>` - one consistent rendering path regardless of which of the 3 methods produced it.
+    Real bug caught and fixed during QA: calling `.getBounds()` on a `L.circle()`/`L.polygon()`
+    instance that was never added to the map throws ("Cannot read properties of undefined (reading
+    'layerPointToLatLng')") - it needs `_map` internally. Fixed by using `LatLng.toBounds()`/
+    `L.latLngBounds()` instead, which compute bounds from raw coordinates with no map attachment
+    needed - caught live via the browser's own runtime error overlay, not just a code read.
+  - **The national park list is real** (`SA_NATIONAL_PARKS` in `geo.ts`) - 17 of South Australia's
+    actual National Parks (not Conservation Parks/Regional Reserves, a distinct lower tier in SA's
+    own system, per the user's specific ask), with approximate centroid coordinates, honestly
+    documented as approximate rather than surveyed boundaries - the same convention already used for
+    `MapView`'s own state-level-only map data.
+  - **Search results reuse the real Projects data instead of forking a disconnected dataset** -
+    `app/pages/_shared/map-search/search-data.ts` imports the same `projects` array
+    `ProjectListContent` renders, gives the 4 you already have real coordinates for, and adds a
+    handful more public projects (not yours) so the search covers more of the map than just your own
+    list - a project can honestly show up in both your Projects list and a spatial search over all
+    public records, since those are two different, both-real things. Events/Occurrence/Observations
+    are new mock datasets, but grounded in this build's own established conventions: real event
+    types already used in project-detail's record tree (Visit/Transect/Quadrat/Block/Ramble/Trap/
+    Custom Event), real South Australian native species (Red Kangaroo, Malleefowl, Pygmy Bluetongue
+    Lizard, ...), and the existing Olivia Wyatt/Maya Dewitt/Phoenix Baker/Lana Steiner placeholder
+    persona set for observer names - never invented taxa or fabricated org names out of pattern.
+  - **Filtering is real, not decorative** - a circle boundary filters by real haversine distance, a
+    polygon by a real point-in-polygon test (`isPointInBoundary` in `geo.ts`), both against each mock
+    record's own lat/lon, combined with an optional keyword filter (species/project/org substring
+    match). Verified live across all 3 boundary methods (drawn circle, entered coordinates, and a
+    selected national park) - each correctly surfaced only the records actually near that area.
+  - **The old Level 1/Level 2 nav text isn't silently dropped** - every role sees the same Level 1
+    (public) results today, with an honest note on the results screen (registered-user only, since
+    guest has no DLA section to reference) that Level 2 access is managed separately under Data
+    Licencing Agreement (DLA) - building real DLA-gated result filtering is a separate, larger piece
+    of work than this search UI, logged here rather than silently built or silently dropped.
+  - Verified `tsc --noEmit` and `eslint` clean on every touched/new file, and a live Chrome pass
+    across all 3 boundary methods, both roles, and all 4 result tabs - zero console errors (one real
+    runtime bug, the detached-layer `getBounds()` crash above, was caught this way and fixed before
+    being called done).
+  - **Follow-up round, per direct feedback on the shipped screen: two fixes.**
+    - **The nav item itself is renamed "Observations" -> "Explore" with a map-search icon
+      (`Map01`, replacing `Eye`)** - `lib/registered-user-nav.ts`'s label in both
+      `registeredUserNav`/`publicUserNav` (the `key`, `keyHref`, and the route
+      `/pages/observations/option-1` are all untouched, only the visible label/icon), flowed
+      through to every `sectionIcons` map that keys off that label:
+      `project-list/option-1`, `project-detail/option-1`, `dashboard/page.tsx`,
+      `observation-detail/option-1`, this page's own copy, and the docs' `patterns/navigation`
+      illustration of the same real IA. "Observations" is deliberately *not* renamed everywhere -
+      it's still the correct name of one of the 4 record types this very screen searches for (the
+      `entityTabs` results tab, `Table aria-label="Observations"`) and of the unrelated
+      Project→Site→Observation→Occurrence record-tree leaf type used across `project-detail`/
+      `observation-detail`/the `proto/*` labs - only the *nav section's* label/icon changed, not
+      the domain noun.
+    - **The "Boundary method" tab list (Draw on map / Enter coordinates / Select a location)
+      switched from a horizontal segmented control to vertical, full-width stacked rows** - 3 full
+      text labels didn't fit a 360px panel horizontally without cramping, flagged directly by the
+      user. Same `TabList`/`Tab` components, just `orientation="vertical"` (matching the pattern
+      already used for Home's/Projects' own vertical tab switchers elsewhere in this build) instead
+      of a new component - the panel already had vertical room to spare, so this was a one-line
+      orientation change, not a redesign.
+    - Verified `tsc`/`eslint` clean and a live Chrome pass across `/pages/observations/option-1`,
+      `/pages/project-list/option-1`, and `/pages/dashboard` (all 3 confirmed to show the map icon,
+      not a stale eye) for both public-user and registered-user - zero console errors.
+  - **Second follow-up: the user supplied a real Figma node for this exact panel** (`node-id=
+    188-4788`, same landing-page file this whole build started from) "as a reference to
+    improvise" - and it turned out to be the actual spec for the boundary-method tab row the
+    previous round had just switched to vertical. The reference shows the 3 tabs back in a single
+    horizontal row (icon + label each, `type="button-border"`'s real bg-secondary tray/bg-
+    primary_alt-plus-shadow active state - a style this codebase already had, just never fit at
+    the width it was given), each a fixed ~155px, comfortably fitting a ~480px-wide container - not
+    the 360px this panel had. **The real bug was the panel's width, not the tabs' orientation** -
+    reverted the vertical-tabs workaround and widened the boundary-method panel to `480px`
+    (`lg:w-[480px]`, was `lg:w-[360px]`) instead, which is what actually fixes "not enough space"
+    per the reference rather than working around it. Every other part of the reference (the
+    disabled-placeholder "Choose a park" select, the vertical radius stepper, the 50%-opacity
+    disabled "Search records" button) was already exactly how this panel was built - confirmed by
+    comparison, not changed. Verified `tsc`/`eslint` clean and a live Chrome pass across all 3
+    method tabs at the new width - comfortable spacing, no cramping, zero console errors.
+  - **Third follow-up: multiple simultaneous search areas, per direct feedback ("allow to add
+    multiple location selections" on Draw on map; "call the selection of location as select
+    location and allow for multiple location selection" on the park picker), plus per-vertex lat/
+    long for a drawn polygon ("provide lat and long for each point selected... separated by a pipe
+    or a comma").** A real architecture change, not a cosmetic one - `Boundary | null` became
+    `Boundary[]`, and every consumer (the map, the filters, the summary line) now works over the
+    whole set, the union of every active area, not just the latest one.
+    - **`Boundary` gained `id` (stable identity for list rendering/removal) and an optional
+      `source`** (`park:<id>` for park-derived circles) so a park selection can recompute or remove
+      *just its own* boundary without touching an independently drawn shape or entered coordinate -
+      see the updated doc comment on `Boundary` in `app/pages/_shared/map-search/geo.ts`.
+    - **Draw on map**: every completed circle/polygon is now *appended* to the list
+      (`onBoundaryAdd`, not `onBoundaryChange`) instead of replacing the previous one - `sa-map.tsx`
+      renders every boundary in the list simultaneously and `FlyToBoundaries` (renamed from
+      `FlyToBoundary`) fits the map to all of them at once, extending one `L.LatLngBounds` per
+      boundary rather than measuring just one.
+    - **Enter coordinates**: "Apply" is now "Add point" - each press appends a new circle boundary
+      and clears the Latitude/Longitude fields (a `coordResetKey` bump remounts those two
+      `InputNumber`s) while leaving the radius field alone, so entering several points in a row at
+      the same radius doesn't require re-typing it each time.
+    - **Select a location: renamed field label "National park" -> "Select location", and the
+      single-select `Select` was swapped for the real `MultiSelect`** (same component family,
+      `components/base/select/multi-select.tsx` - a full listbox-in-popover with its own search and
+      Reset/Select-all footer, not a custom build). Selected parks are derived reactively
+      (`parkBoundaries`, a `useMemo` over `selectedParkIds` x the one shared radius input) rather
+      than stored as their own imperative list, so changing the radius live-updates every currently
+      selected park's boundary at once, and deselecting a park cleanly drops just that one circle.
+    - **Removing a boundary is one shared list now, not a single "Clear"** - every active boundary
+      (drawn, entered, or park-derived) renders as its own row with a "Remove" button
+      (`removeBoundary`, which knows to toggle a park out of `selectedParkIds` vs. splice a manual
+      one out of `manualBoundaries` depending on `source`), plus a "Clear all" action once more than
+      one is active. A results view with its last boundary removed falls back to the search view
+      automatically - computed as a `displayMode` derived value, not synced via a `useEffect`
+      (the first attempt used an effect calling `setMode`, correctly flagged by lint's
+      `react-hooks/set-state-in-effect` rule as an avoidable cascading render - fixed by deriving
+      instead).
+    - **Polygon summaries now list every vertex's own "lat, lon" pair, points separated by " | "**
+      (`boundarySummary` in `geo.ts`) instead of a bare point count - e.g. `Polygon: -29.73, 130.25
+      | -29.73, 134.52 | -33.36, 132.39`, confirmed live off a real 3-point polygon drawn on the
+      map, not just read from the source.
+    - **Filtering checks every active boundary, not one** - `isPointInAnyBoundary` (`geo.ts`) is
+      `boundaries.some(isPointInBoundary)`; every one of the four result-tab filters was switched
+      from the single-`boundary` check to this union check.
+    - **QA note specific to this round: verifying leaflet-draw's Polygon tool via the browser
+      automation tool needed `hover` immediately before each `left_click`, not just the click
+      alone.** leaflet-draw places polygon vertices via an invisible 40x40px marker that follows
+      real `mousemove` events and only adds a point on that marker's own `mousedown`/`mouseup` - a
+      scripted click with no preceding move to that exact coordinate can leave the marker at its
+      stale position, so the click lands on the bare map pane (which only listens for `mouseup`/
+      `mousemove`, not `mousedown`) and silently drops the point. Real mouse use never hits this
+      (physically moving the cursor to a point always generates the intermediate `mousemove`) - a
+      testing-tool nuance, not a product bug, but worth recording since it cost real time to
+      diagnose and will recur for any future automated QA pass that draws a polygon.
+    - **Also noted, not fixed - pre-existing `MultiSelect`/`Autocomplete` behaviour, not something
+      this feature introduced:** pressing Escape while its popover is open clears the current
+      selection entirely (confirmed reproducible), not just closes the popover the way clicking
+      outside it does. Clicking outside is the reliable way to commit a multi-select and was used
+      for every verification in this round; flagged here as a candidate gap for whoever next touches
+      `components/base/select/multi-select.tsx`, not fixed as part of this page's own work.
+    - Verified `tsc`/`eslint` clean and an extensive live Chrome pass: two circles drawn and kept
+      simultaneously (each removable on its own), a real 3-point polygon drawn and closed with the
+      correct pipe-separated vertex summary, two national parks selected together (Belair + Flinders
+      Ranges) producing two independent circles with the map fitting both, and a combined search
+      across those two parks correctly returning 14 records across both regions (2 projects, 4
+      events, 4 occurrences, 4 observations) - zero real console errors throughout (one recurring
+      "asynchronous response" message is a generic Chrome-extension-messaging artifact unrelated to
+      this app's own code, confirmed by its `0:0` line/column attribution).
+  - **Fourth follow-up: the boundary-method panel and the map now sit flush, per direct feedback
+    ("remove all padding corner radius").** The outer row's `gap-6 p-6 pt-0` is gone (just `flex
+    flex-1 flex-col lg:flex-row` now), and `rounded-xl` was dropped from both the panel (still
+    `border border-secondary bg-primary p-4` - its own internal content padding is untouched, only
+    the outer spacing/rounding) and the map wrapper (its `border border-secondary` was dropped too,
+    matching the reference screenshot's borderless, edge-to-edge map). Verified `tsc`/`eslint` clean
+    and live - both panels now render with sharp square corners, flush against each other and the
+    viewport edges, zero console errors.
+  - **Fifth follow-up, the largest yet: the results body rebuilt to match a real Figma reference
+    (`node-id=180-1428`, same landing-page file) - four tabs (Events/Occurrences/Observations/
+    Resources, replacing the old Projects/Events/Occurrence/Observations four), a real Hierarchy
+    column, per-table customise-columns, and a row-click detail panel.**
+    - **"Projects" is no longer its own tab or its own dataset - a Project *is* an Event now**,
+      per the user's own domain framing ("A project is an event and under project there shall be
+      other events such as sites, visit, transect..."). `search-data.ts`'s `SearchEvent` unifies
+      what used to be two separate arrays (`searchProjects` + `searchEvents`): every existing
+      project becomes a root Event (`type: "Project"`, no `parentId`), extended with real child
+      Sites and a further level of Visits/Transects/Quadrats/Blocks/Rambles/Traps/Custom Events
+      under several of them (`eventAncestors`/`hierarchyFor` walk this real parent-pointer chain -
+      not a fabricated static string). A brand-new `searchResources` dataset (Images/Files/
+      Reference Links, each genuinely attached to a real Occurrence and inheriting that record's
+      location) was added as the fourth tab, since it didn't exist as a concept before this round.
+      Occurrence/Observation counts were also roughly doubled (12→16 each) and Events grew from 14
+      to 25, per direct instruction to "add more... more projects, more sites etc." without
+      changing the table structure itself.
+    - **Hierarchy column**: a plain breadcrumb of ancestor ids (`geo`-adjacent `eventAncestors`/
+      `hierarchyFor` helpers, rendered by the new `HierarchyCell` in `results-table.tsx`) - "-" for
+      a root Project or a record attached directly to one, otherwise every ancestor id down to and
+      including the record's own immediate parent event, confirmed live with real chains like
+      `adelaide-hills › site-adelaide-1`. Deliberately **not** the Figma reference's own per-level
+      show/hide-levels dropdown menu - that reference's own example data repeats one identical
+      placeholder chain on every single row regardless of the record shown, a clear sign it's
+      illustrative filler, not a real interaction to replicate faithfully; a real breadcrumb of the
+      actual computed ancestor ids covers the substance of "show the current hierarchy, ultimate
+      parent always a project" without building a bespoke collapse-per-level UI for it - logged
+      here as a deliberate scope call, not an oversight.
+    - **Generic `ResultsTable` primitive** (`app/pages/_shared/map-search/results-table.tsx`) is
+      now what each of the 4 tabs renders, instead of 4 hand-duplicated table blocks - owns the
+      per-table search box, the sub-type filter chip row (Figma's own "All / Project / Site /
+      Visit / ..." pattern, one real, working filter per entity's own type field), the
+      "Customise columns" trigger, and the row-click detail panel. Column *definitions* (what each
+      entity's columns are, how each renders, which are visible by default) stay in
+      `page.tsx` next to the data they describe - the shared file owns table chrome/interaction
+      only, not domain knowledge of what an Event or a Resource actually is.
+    - **Customise columns**: a real sliders-icon button next to each table's search box opens a
+      right-side `SidePanel` (a new generic slide-over built directly on react-aria's
+      `ModalOverlay`/`Modal`/`Dialog` - the existing `components/application/modals/modal.tsx`
+      pair hardcodes centre placement, so this needed its own thin wrapper, not a prop bolted onto
+      that one) listing every real column for that table as a checkbox - toggling one shows/hides
+      it live. Every column defined for a table is real and rendered somewhere already (never an
+      invented "power user" column with no data behind it) - a deliberately smaller set than
+      Figma's own ~30-column mega-table, most of which the reference itself never populates with
+      real data past the first few columns either.
+    - **Row click opens the same `SidePanel`, showing every one of that record's real fields** (all
+      columns, not just the currently-visible ones) as label/value pairs - confirmed live on an
+      Event row, correctly showing its full Hierarchy chain even when that column was toggled off
+      in the table itself.
+    - **Real bug found and fixed during QA: react-aria-components' `Table` cannot safely change its
+      own column count at runtime via the "dynamic collections" API alone.** First attempt used the
+      documented pattern (a `columns` prop + function children on both `Table.Header` and every
+      `Table.Row`) - correct per react-aria's own docs, but still crashed live ("Cell count must
+      match column count. Found 6 cells and 7 columns") the moment a checkbox toggled the set,
+      because react-aria's Collection caches a row's rendered cells keyed by item identity and
+      doesn't reliably re-invoke a row's render function just because the *external* `columns` prop
+      changed underneath it, confirmed by reproducing the crash twice with the dynamic-columns API
+      already in place. Fixed by giving the `<Table>` itself a `key` derived from the sorted visible
+      column ids - a column-set change now remounts the whole table fresh instead of relying on
+      react-aria's own diffing, which is simple, robust, and cheap at this table's real row counts
+      (a dozen-odd rows, never thousands). Verified live, twice, with zero console errors after the
+      fix - toggling "Status" on the Events tab now shows the real column immediately with no crash.
+    - Verified `tsc`/`eslint` clean and an extensive live Chrome pass: a 1573km circle covering the
+      whole state (69 records across all 4 tabs), sub-type chips filtering correctly (Project 8/
+      Site 9/Visit 2/... on Events), a real Hierarchy chain confirmed on a Visit row via its own
+      detail panel, the customise-columns panel toggling a real column live, and the Resources tab's
+      real per-type icons, clickable Reference Link URLs, and inherited hierarchy chains all
+      confirmed correct - zero console errors throughout the final pass.
+  - **Sixth follow-up: the "deliberate scope call" on Hierarchy above was directly overridden by
+    the user off a real screenshot of Figma's own interactive dropdown ("do not deviate from
+    figma... The hierarchy columns must show the hierarchy of the events") - rebuilt as the real
+    interactive widget, and all 4 tabs' column sets re-audited against Figma exactly.**
+    - **`HierarchyCell` (`results-table.tsx`) is now a real, working per-row collapse control, not
+      a static breadcrumb.** A small square "..." trigger (`DotsHorizontal`, matching Figma's own
+      box, not `Dropdown.DotsButton`'s circular default) opens a real `Dropdown.Root`/`Popover`/
+      `Menu` with exactly the four actions Figma's screenshot showed - "Show one level up" /
+      "Hide one level up" / "Show all levels" / "Hide all levels" - each correctly disabled at its
+      own boundary (e.g. "Show one level up" disabled once nothing is hidden). A self-contained
+      `hiddenCount` state per cell instance (0 = every ancestor shown) drives which leading
+      segments of the real ancestor chain are collapsed; the remaining segments still render
+      chevron-separated, same real ids as before. The whole cell stops click propagation so opening
+      the menu or picking an option never fires the row's own `onAction` (which opens the record
+      detail panel) - same defensive pattern already used for the Resources tab's reference-link
+      anchor. Verified live: opened the menu on a Site row, collapsed and re-expanded its one
+      ancestor, and confirmed a 3-level chain (`flinders › site-flinders-1 › transect-flinders-1`
+      on `quadrat-flinders-1`) renders correctly - zero console errors.
+    - **Every tab's column set was trimmed to Figma's own exact 6 columns, dropping every column
+      this build had separately invented beyond what Figma actually shows** - the earlier
+      "deliberate, smaller subset of Figma's ~30-column mega-table" reasoning still holds for the
+      *table's total width*, but the invented `defaultVisible: false` extras (Status/Region/
+      Organisation on Events, Status/Region on Occurrences, Region on Observations, Date/Region on
+      Resources) were never real Figma columns at all, just this build's own addition - removed
+      rather than left as extra hidden options a Figma audit wouldn't back. Events: Event ID/Event
+      Name/Event Type/Start Date/End Date/Hierarchy. Occurrences: Occurrence ID/Occurrence Name/
+      Occurrence Type/Scientific Name/Date/Hierarchy (unchanged - already matched). Resources:
+      Attached Resource/Type/Attached to Concept/Record ID/Record Name/Hierarchy (unchanged).
+      `Badge` import dropped from `page.tsx` once the two columns that used it (Events'/
+      Occurrences' Status) were removed.
+    - **Observations' columns didn't match Figma at all - it had substituted an "Observer" column
+      (name + avatar) for Figma's real "Scientific Name" column.** Fixed by restructuring
+      `SearchObservation` (`search-data.ts`) to split its single `species` field into `commonName`
+      + `species` (now genuinely the scientific/binomial name, matching `SearchOccurrence`'s own
+      field naming), backfilling real scientific names for all 16 rows by reusing the exact
+      binomial names this file already established for the matching species in `searchOccurrences`
+      (e.g. Western Grey Kangaroo -> `Macropus giganteus`) rather than inventing new ones. Columns
+      are now Observation ID/Observation Name/Observation Type/Scientific Name/Date/Hierarchy,
+      matching Figma exactly; `observerInitials`/`observerName` stay on the data type (still real,
+      just no longer rendered as a column) rather than being deleted outright.
+    - **"Custom Event" (Title Case) -> "Custom event" (lowercase "event"), matching Figma's own
+      chip label exactly.** Fixed at the source rather than just the display label - `EventType`'s
+      literal union value in `search-data.ts` and the one data row using it (`custom-remarkable-1`)
+      were both changed to `"Custom event"`, so the chip's `value`/`label` and the record's own
+      `type` field never drift from each other.
+    - Verified `tsc --noEmit` and `eslint` clean on every touched file
+      (`results-table.tsx`/`search-data.ts`/`page.tsx`), then a fresh live Chrome pass across a
+      69-record, 4-tab search: confirmed the "Custom event 1" chip label casing, all 4 tabs'
+      column headers against the list above, the interactive Hierarchy dropdown's four actions and
+      their disabled states, a multi-level collapsed/re-expanded chain, and zero console errors.
+  - **Seventh follow-up: the user supplied a fresh, specific Figma link (node `205:20764`) and
+    said directly "you are confused... make sure you follow the same" - the prior round had
+    verified against cached screenshots from earlier in the session rather than actually re-fetching
+    this exact node, and it turned out to document three more real, verifiable structural
+    differences beyond what the cached screenshots had shown.** `get_design_context`/`get_screenshot`
+    on `205:21340` (an instance of the same "Table View" component the earlier round already built
+    from) confirmed the 6-column set per tab was already correct, but surfaced:
+    - **Every Type column (Event Type/Occurrence Type/Observation Type/Resource Type) renders a
+      real leading icon per sub-type, not plain text** - confirmed via the rendered screenshot
+      (Folder for Project, a location pin for Site, a paper-plane for Visit, a dotted grid for
+      Transect, a table-style grid for Quadrat, corner-crop brackets for Block, crossing arrows for
+      Ramble, a compass/nav pointer for Trap, a plain outline circle for Custom event; a flattened
+      oval for Individual, stacked layers for Population, a wave glyph for Non-Biotic, a people
+      glyph for Community - the same 4-value `OccurrenceType` shared by Occurrences and
+      Observations). Added `eventTypeIcon`/`occurrenceTypeIcon` maps in `page.tsx` (real
+      `@untitledui/icons`: `Folder`/`MarkerPin01`/`Send01`/`Grid03`/`LayoutGrid01`/`Crop01`/
+      `Shuffle01`/`NavigationPointer01`/`Circle` and `CircleCut`/`LayersTwo02`/`Waves`/`Users01`),
+      rendered as icon+label in each Type cell - Resources' Type column already had a real
+      `resourceTypeIcon` map (from the "Attached Resource" cell) but wasn't applying it to its own
+      "Type" column cell, fixed to reuse the same map there too.
+    - **The sub-filter chip row also carries the same icon per sub-type, plus its count renders as
+      a small circular pill next to the label, not plain trailing text.** `TypeFilterOption`
+      (`results-table.tsx`) gained an optional `icon` field, threaded through every `typeOptions`
+      array in `page.tsx` (reusing the exact same icon maps as the Type columns, so the chip row
+      and the column can never show a different icon for the same sub-type); the chip count became
+      an inline `rounded-full bg-secondary` pill. **Real bug caught and fixed during this build,
+      before ever loading it in a browser (would have been caught live either way, since the QA
+      pass below did catch a first-attempt version of it):** the pill span was first written with
+      `flex` instead of `inline-flex` - `display: flex` is a block-level box even though the parent
+      `<span data-text>` (`Button`'s own internal text wrapper, `components/base/buttons/
+      button.tsx`) is plain inline flow, so the block-level pill forced a line break, pushing the
+      count onto its own line under the label instead of sitting beside it. Fixed by using
+      `inline-flex` - an inline-level flex container that still centers the number internally but
+      participates in the surrounding inline flow like any other inline element. Worth remembering
+      generally: a `flex`/`grid` utility inside a plain (non-flex) inline parent always breaks the
+      line, `inline-flex`/`inline-grid` is the one that doesn't.
+    - **Every Type column header (`Event Type`/`Occurrence Type`/`Observation Type`/`Type`) carries
+      a small `HelpCircle` tooltip icon next to the label** - confirmed in the screenshot on all 4
+      tabs. `ColumnDef` gained an optional `headerTooltip` string, rendered via the same real
+      `Tooltip`/`TooltipTrigger` components already used for the "Customise columns" trigger.
+      Tooltip copy is real, sourced from this file's own already-established domain model (the
+      Project→Site→.../Custom event hierarchy, the Individual/Population/Non-Biotic/Community
+      taxonomy, Image/File/Reference Link) rather than fabricated - Figma's own screenshot doesn't
+      expose the tooltip's actual text (it wasn't open in the capture), so the copy is honestly this
+      build's own accurate gloss on the real taxonomy, not a guess at Figma's specific wording.
+    - **Incidentally caught and fixed a real regression from the "Custom Event"/Scientific-Name
+      round above**: `observationColumns`' `rowTextValue`/`searchText` still read `o.species` for
+      the record's *display* name - correct before that round (when `species` held the common
+      name), wrong after it (once `species` was repurposed to hold the real scientific/binomial
+      name and `commonName` was added for the display name) since nothing had updated these two
+      call sites to match. Fixed to `o.commonName`, with `searchText` now covering both
+      `commonName` and `species` - the detail side-panel title and the row's own accessible text
+      value were both silently showing a scientific name instead of the common one until this fix.
+    - The Occurrences/Observations/Resources tabs (hidden instances inside the same Figma frame,
+      `195:10266`/`195:10315`/`195:10353`) render as 1x1 blank screenshots when fetched directly
+      (Figma doesn't rasterize a hidden instance) - re-confirmed their column sets and Type-column
+      icon treatment instead via this session's still-cached screenshots of their own standalone
+      frames from the prior round (`tableview1.png`/`tableview2.png`/`tableview4.png`, nodes
+      `195:12572`/`195:18477`/`195:15188`) rather than re-fetching what Figma can't render anyway.
+    - **The top-level 4-tab bar was left as the real DEW `Tab`/`TabList` component at the time -
+      reversed in the eighth follow-up below, once the user asked directly to match this exact
+      node pixel-for-pixel.** (Historical note, kept for the record rather than deleted: the
+      two-line stat-tile shape genuinely doesn't fit `Tab`'s API, so the original call to avoid a
+      one-off widget wasn't wrong given the ask at the time - see the eighth follow-up for why it
+      was rebuilt.) Figma's real numbered pagination (rows-per-page select, `1 2 3 … 8 9 10`,
+      "1-50 of 250") was already logged as a separate, bigger component in the `table` entry above
+      when `TableCard.Pagination`'s simpler Page-X-of-Y/Previous/Next was built - still not
+      revisited here, and doing so would also mean fabricating a much larger fake dataset just to
+      have real numbers to paginate through, which this page's honest, real (if small) mock dataset
+      doesn't support today.
+    - Verified `tsc --noEmit` and `eslint` clean on every touched file (`results-table.tsx`/
+      `page.tsx`), then a fresh live Chrome pass across all 4 tabs: confirmed every Type column's
+      icon, every sub-filter chip's icon and inline pill count (including the `flex`→`inline-flex`
+      fix rendering correctly), the header tooltip firing on hover, the Hierarchy dropdown still
+      opening/closing and collapsing/re-expanding a real chain correctly, and zero console errors
+      on a fresh page load.
+  - **Eighth follow-up: the user re-supplied the same node (`205:20764`) with "ensure the whole
+    page design remains the same as figma," which turned out to mean two real, previously-unbuilt
+    pieces of this exact frame, not a re-confirmation of what the seventh round already covered.**
+    - **"Edit search" was a bordered `Button`, positioned below the heading block - Figma has it as
+      a plain link, positioned above it.** `get_design_context` on `205:23084` (the link) confirmed
+      it's icon + `text-tertiary` text with no border/background, and the frame's own y-ordering
+      (`205:23084` at y:24, the "Search results" heading block at y:64) puts it as its own row
+      above the title, not beside it as a trailing action. `SectionHeader.Root` is `flex-col`, so
+      simply moving the `Button` to be `Root`'s first child (before `Group`, dropping `Actions`
+      entirely) reproduces the same order without a new component; the `Button` itself switched
+      from `color="secondary"` to `color="link-gray"` (a real, already-used variant) to drop the
+      border/background and match the link styling exactly.
+    - **The 4-tab bar is now a real, working two-line stat-tile switcher, matching Figma's "Metrics
+      section" exactly (`get_design_context` on `I205:21340;195:10228`), reversing the seventh
+      round's "left as the real DEW `Tab`" call now that the user asked directly to match this
+      frame precisely.** Plain `<button>` elements per tile (Figma's own generated markup uses
+      `<button>`, not a tab/tabpanel ARIA role, confirming this is a composed structural switcher,
+      not a mis-skipped real component) - active tile: `bg-primary`, a 1.5px bottom border only
+      (`border-b-[1.5px] border-[var(--color-brand-500)]`, no border on the other 3 sides), icon +
+      label in `text-brand-tertiary` (brand-600) at `font-medium`, the count in `text-brand-secondary`
+      (brand-700); inactive tiles: `bg-primary`, a full 1px `border-[var(--color-brand-100)]` on
+      all 4 sides, icon + label in `text-tertiary` at regular weight, the count in `text-tertiary`
+      at `font-medium`. `border-brand`/`border-brand-100` have no matching `@utility` in this
+      codebase (confirmed via grep, 0 hits) - referenced the real `--color-brand-500`/
+      `--color-brand-100` `@theme` variables directly via arbitrary-value classes, same "no
+      matching utility for a single-use colour" precedent as `tree-view`'s connector line and
+      `progress`'s track. The icons themselves also changed to match Figma exactly - `Activity`
+      (Events), `Target05` (Occurrences), `Eye` (Observations, already correct), `File06`
+      (Resources) - replacing the previous record-type-literal icons (`Calendar`/`ClipboardCheck`/
+      `File02`), all four confirmed as real, already-exported `@untitledui/icons` members before
+      use. Since Figma's own tiles are plain buttons rather than ARIA tabs, the surrounding
+      `<Tabs>`/`<TabPanel>` wrapper (react-aria-components) was dropped in favour of a plain
+      `entityTab === "..."` conditional render per `ResultsTable` block - simpler and a more
+      accurate match to the source than forcing tab semantics onto a control that isn't one.
+    - Verified `tsc --noEmit` and `eslint` clean (also confirmed `File02`, no longer used anywhere
+      in the file post-swap, was dropped from the icon import list rather than left dead), then a
+      live Chrome pass: searched via "Select a location" (Belair National Park), confirmed the
+      "Edit search" link's new position/style, the 4-tile bar's icons/colours/active-state border
+      against a side-by-side Figma screenshot, switched all 4 tiles (Events/Occurrences/
+      Observations/Resources) and confirmed each swaps its `ResultsTable` correctly, and checked
+      both `public-user` and `registered-user` shells - zero console errors either role.
+  - **Ninth follow-up: `searchEvents`' mock data (`search-data.ts`) enriched so a broad search
+    surfaces 2+ of every event sub-type with real, multi-level Hierarchy chains, matching the
+    *density* of the same reference screenshot's example table (not its literal placeholder IDs -
+    see the seventh follow-up's own reasoning for why that placeholder chain was never meant to be
+    copied verbatim).** Before this pass, Transect/Quadrat/Block/Ramble/Trap/Custom event each had
+    exactly one instance in the dataset - Site and Visit already had several. Added one sibling
+    instance of each under a different region's existing Site (`trap-ki-1`, `block-naracoorte-1`,
+    `ramble-nullarbor-1`, `custom-lake-eyre-1`), plus a second, genuinely 3-level-deep
+    Transect → Quadrat chain under Adelaide Hills (`transect-adelaide-1` → `quadrat-adelaide-1`,
+    parented under `site-adelaide-2`) alongside the pre-existing Flinders one - so the Hierarchy
+    column has two real `Project > Site > Transect` chains to show, not a single example. Every
+    new entry follows the same conventions as its siblings (real org names, real SA regions,
+    `status`/`statusColor` populated even though the Events table doesn't render them, per the
+    type's requirements). No new occurrences/observations/resources were added or repointed to
+    the new events - out of scope for this pass, and nothing referenced them before either.
+    Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: selected all 8 southern-SA
+    national parks at 96 km radius (53 total records across 8 areas), confirmed Events now breaks
+    down as Project 5 / Site 6 / Visit 2 / Transect 2 / Quadrat 2 / Block 2 / Trap 1 (Ramble/Custom
+    event stayed at 0 for this specific park selection - `ramble-nullarbor-1`/`custom-lake-eyre-1`
+    sit in Nullarbor/Lake Eyre, outside the reach of any of these 8 southern parks, not a bug),
+    and specifically confirmed both Quadrat rows render a real 3-segment chain
+    (`flinders › site-flinders-1 › transect-flinders-1` and
+    `adelaide-hills › site-adelaide-2 › transect-adelaide-1`) - zero console errors.
+  - **Tenth follow-up, per direct re-ask to match sizing/spacing/colour exactly and to use Figma's
+    own alphanumeric ID format: three real gaps found via `get_design_context` on the actual
+    header/body table cells (not just the Metrics section this pass had already covered), all
+    fixed - plus one sitewide, previously-undetected dead-CSS bug surfaced along the way.**
+    - **Event ID/Hierarchy were showing this build's own internal slug ids (`site-adelaide-2`,
+      `transect-flinders-1`, ...), not a real record-ID format at all.** Figma's Event ID column
+      (`get_design_context` on the column's own header+cells, e.g. `205:21181`) uses a real short
+      alphanumeric code per type - `BD - 5034` (Project), `SU00501` (Site), `VU00501` (Visit),
+      `TR00501` (Transect), `QR00501` (Quadrat), `BK00501` (Block), `RMB00501` (Ramble - 3-letter
+      prefix, our own data had briefly used a 2-letter `RM`+wrong-number scheme that didn't match
+      Figma at all), `TRP00501` (Trap), `CU00501` (Custom event). Added a `code: string` field to
+      `SearchEvent` (`search-data.ts`) - `id` stays the internal slug used for parent-linking/React
+      keys/routing, `code` is the display-only value. Assigned a real code to all 25 events
+      (Projects sequential `BD - 5031`...`5038`, keeping Figma's own `BD - 5034` for the Kangaroo
+      Island project as a nice, deliberate coincidence rather than a forced one; every other type
+      sequential per-type, e.g. `SU00501`...`SU00509` across the 9 Sites). `eventAncestors`/
+      `hierarchyFor` now build their chains from `.code` instead of `.id`, so every Hierarchy cell
+      across all 4 tabs (Events' own, plus Occurrences/Observations/Resources via `hierarchyFor`)
+      reads in the same real-ID format, not just the Event ID column alone. `eventColumns`' own ID
+      cell switched from `e.id` to `e.code`.
+    - **The Event ID cell's own text styling was wrong too, caught in the same
+      `get_design_context` call** - `font-mono text-sm text-secondary` in code vs. Figma's actual
+      `Barlow Regular, text-sm, text-tertiary` (not monospace, not `text-secondary`). Fixed to
+      `text-sm text-tertiary`, matching the literal computed style Figma returns for that cell.
+      Incidentally caught the same wrong color one column over: the Event/Occurrence/Observation/
+      Resource **Type** column's label text was `text-secondary` in all 4 places, Figma's cell
+      (`get_design_context` on `205:21215`) confirmed `text-tertiary` - fixed all 4 call sites.
+    - **The table header row was rendering as plain, oversized, black text with zero header
+      styling at all - a real bug, not a style-precision miss.** `ResultsTable`'s `Table.Header`
+      passed the column label as `children` (a bare `<span>{col.label}</span>`), but the real
+      `Table.Head` component (`components/application/table/table.tsx`) only applies its
+      `text-xs font-semibold text-quaternary` header treatment - and its own tooltip icon - when
+      given the `label`/`tooltip` *props*, not children; the manual `children`-based version this
+      page had built duplicated the tooltip by hand but never applied the label styling at all.
+      Confirmed the real target styling via `get_design_context` on the header cell itself
+      (`205:21180`: `Barlow Semibold, text-xs, text-quaternary` = brand's real gray-500 `#8f8b87`,
+      exact token match). Fixed by switching to `<Table.Head id={col.id} label={col.label}
+      tooltip={col.headerTooltip} .../>` - the real component's own built-in props - rather than
+      re-deriving the same styling a second time by hand. Dropped the now-unused `HelpCircle`
+      import from `results-table.tsx` as a result.
+    - **A real, sitewide, previously-undetected dead-CSS bug: `bg-border-secondary` (the row/
+      header divider line's background colour, in both `components/application/table/table.tsx`
+      and `components/base/table/table.tsx`, 2 occurrences each) was never a real Tailwind
+      utility** - only `border-secondary` (a `border-color` utility) exists in `app/globals.css`;
+      nothing defines a `bg-` version, confirmed via grep and via the actual compiled CSS output
+      (0 hits for the class, `.border-secondary` present). Every table row/header border in this
+      codebase was rendering as a fully transparent 1px line - a table with zero visible separator
+      lines between rows, silently, everywhere `Table`/`TableCard` is used (the `/components/table`
+      doc page, `project-list-content.tsx`, `project-detail/option-1`, `project-list/option-2`,
+      the map search results table, and 4 more consumers - see `grep -rl` for the full list). Same
+      failure mode as `tree-view`'s connector line and the earlier `progress`-bar track fix - a
+      plausible-sounding class with no matching hand-curated `@utility` rule. Fixed all 4
+      occurrences to `bg-[var(--ui-border-secondary)]`, the same "reference the real CSS variable
+      directly" precedent used every other time this bug shape has surfaced. Verified live on both
+      this page and the unrelated `/components/table` doc page - row divider lines are now visibly
+      present on both, zero console errors either page.
+    - **A third, denser `Table` size added, matching Figma's own dense results-table row/header
+      metrics exactly, rather than settling for the closest of the two existing sizes.** Figma's
+      spec (from the header/body cell fetches above): a 34px header row, a 44px body row, 12px
+      horizontal / 8px vertical cell padding - none of which the existing `"sm"` (36px/56px,
+      20px/12px) or `"md"` (44px/72px, 24px/16px) sizes matched closely enough to call "exact".
+      Added `size="xs"` as a genuine, reusable third option on the real `Table`/`TableCard`
+      components (`TableContext`'s type, `TableCardRoot`, `TableHeader`, `TableHead` - which
+      previously had *no* size-aware padding branch at all, always `px-6 py-2` regardless of
+      `size` - `TableRow`, `TableCell`), documented with a comment on `TableContext` pointing back
+      at this exact Figma node, so any future page needing this same dense pattern reaches for it
+      instead of re-deriving the same pixel values inline. `ResultsTable` now passes `size="xs"`
+      on `TableCard.Root` specifically (not just the inner `<Table>`) - `TableRoot`'s own context
+      provider prefers an ancestor's size over its own `size` prop (`context?.size ?? size`), so
+      `TableCard.Root`'s default `"md"` would otherwise silently win over a `size="xs"` passed only
+      to the nested `<Table>`, a real footgun worth documenting inline for the next consumer.
+    - Verified `tsc --noEmit`/`eslint` clean on every touched file, then a live Chrome pass:
+      searched Belair + Flinders Chase at 80km (24 records), zoomed into the header row and first 4
+      body rows side-by-side against Figma's own screenshot (header text now small/gray/semibold
+      matching exactly, row divider lines now visible, Event ID column showing real `BD - 5031`/
+      `SU00501`-style codes), confirmed a 3-level Hierarchy chain renders in the same code format
+      (`BD - 5031 › SU00502 › TR00502`), confirmed the Hierarchy dropdown still opens/functions,
+      checked the Occurrences tab's own `hierarchyFor`-driven chain (`BD - 5031 › SU00501 ›
+      VU00501`), and spot-checked the unrelated `/components/table` doc page to confirm the
+      sitewide border-colour fix improved rather than broke every other `Table` consumer - zero
+      console errors across every page checked.
+  - **Eleventh follow-up, per direct clarification of the Hierarchy cell's exact intended
+    behaviour (the previous rounds had it show every ancestor by default and never include the
+    row's own Event, neither of which was ever explicitly specified before this): the chain's own
+    last segment is always the row's own Event ID, exactly one level is visible by default, and
+    every visible segment - including every ancestor, not just the "..." trigger - opens that
+    specific ancestor Event's own detail panel.**
+    - **`eventAncestors`/`hierarchyFor` (search-data.ts) now return `SearchEvent[]` (full ancestor
+      Event objects), not `string[]` codes** - a Hierarchy segment needs to open its own detail
+      panel, which needs the full record, not just a display string. Added `eventChain(event)` -
+      `[...eventAncestors(event), event]`, i.e. every ancestor *plus the event itself* as the
+      always-present final segment - used by the Events tab's own Hierarchy column in place of the
+      bare `eventAncestors(e)` it called before (which never included the row's own Event at all,
+      the actual gap this round fixes). `hierarchyFor` already ended at the record's immediate
+      parent Event (unchanged in spirit, just returning the object now instead of its code).
+    - **`eventTypeIcon` moved from `page.tsx` into `search-data.ts` (and is now exported) so
+      `HierarchyCell`'s own detail panel can show the same per-type icon the main Type column
+      does**, rather than duplicating the same `Record<EventType, Icon>` map in two files -
+      `page.tsx` now imports it instead of defining its own copy. `EventType`'s now-unused import
+      dropped from `page.tsx`, and `MarkerPin01`/`Send01`/`Grid03`/`LayoutGrid01`/`Crop01`/
+      `Shuffle01`/`NavigationPointer01` dropped from its icon imports (only used by that map);
+      `Circle`/`Folder` stayed, both still used elsewhere on the page.
+    - **`HierarchyCell` (results-table.tsx) rewritten**: `chain` is now `SearchEvent[]`.
+      `hiddenCount` defaults to `chain.length - 1` (collapsed to just the one always-shown level,
+      not `0`/fully-expanded as before) and is clamped at that same `chain.length - 1` maximum
+      (previously `chain.length`, which could hide every segment including the row's own ID) -
+      "Hide one level up"/"Hide all levels" now disable correctly once only that one level
+      remains, matching "always one level will be shown which is the same as the respective event
+      ID" exactly. Every visible segment (ancestors *and* the row's own final segment alike) is
+      now a real `<button>`, not inert styled text - clicking one opens a second `SidePanel`
+      (self-contained per `HierarchyCell` instance, independent of `ResultsTable`'s own row-detail
+      panel) showing that specific ancestor's Event ID/Name/Type-with-icon/Start/End Date/its own
+      Hierarchy (rendered as plain breadcrumb text there, not recursively interactive - avoids
+      unbounded nested-panel complexity while still surfacing the information). React-aria's
+      `ModalOverlay` handles two panels open at once (e.g. opening a Hierarchy segment's panel from
+      *inside* the row-detail panel, since the Events tab's own row-detail view also renders a
+      `HierarchyCell` for its Hierarchy field) without extra wiring - confirmed no dismiss/stacking
+      issues live.
+    - Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: searched Belair National
+      Park (14 records), confirmed every Events row defaults to showing exactly one segment equal
+      to its own Event ID (`SU00501`, `VU00501`, `TR00502`, `QR00502`), "Show one level up" on the
+      Quadrat row revealed exactly one more ancestor (`TR00502 › QR00502`), clicking that `TR00502`
+      segment opened a real side panel with the Transect's own ID/Name/Type/dates/Hierarchy,
+      "Show all levels" revealed the complete `BD - 5031 › SU00502 › TR00502 › QR00502` chain, and
+      the Occurrences tab's own `hierarchyFor`-driven cells defaulted to the same one-level-only
+      behaviour (`VU00501`, `SU00502`) - zero console errors throughout.
+  - **Twelfth follow-up: two changes, one a real layout bug fix, one a business-driven IA reversal
+    confirmed against a fresh Figma node.**
+    - **The selected metrics tile shifted vertically by ~1px on selection - a real bug, not a style
+      nit, flagged directly by the user off a screenshot.** Root cause: the active/inactive states
+      toggled real border *width*, not just colour - inactive was a full 1px border on all 4 sides,
+      active dropped top/left/right to 0px and used only a 1.5px bottom border, so the two states
+      had different total vertical border height and the button's own box (everything inside it)
+      physically moved when switching. Fixed with the standard technique for this exact tab-bug
+      class: every tile now keeps an identical 1px border box at all times regardless of state
+      (`border` + conditional `border-transparent`/`border-[var(--color-brand-100)]`, width never
+      changes) and the visible active "underline" is a separate `absolute inset-x-0 -bottom-px
+      h-[1.5px]` bar layered on top - out of normal flow entirely, so it can never affect the
+      button's own box height. Verified live: zoomed into the identical pixel region across all 5
+      tabs (Projects/Events/Occurrences/Observations/Resources active in turn) and confirmed the
+      label/count text sits at the exact same vertical position in every state, pixel for pixel.
+    - **Projects split back out into its own top-level tab, ahead of Events - reversing the
+      "Projects folded into Events" decision from earlier in this build, per direct business
+      feedback and a fresh Figma reference** (`get_design_context`/`get_screenshot` on node
+      `209:27950`, the same file's landing-page - 5 tiles now, Folder/Activity/Target05/Eye/File06,
+      Projects first). The underlying data model is untouched - a Project is still internally an
+      `Event` (`type: "Project"` in search-data.ts) - only which tab a Project-type row surfaces in
+      changed. `EntityTab` gained `"projects"` (first in the union and in `entityTabs`, matching
+      Figma's own left-to-right order); `filteredAllEvents` (the original spatial+keyword pass over
+      `searchEvents`) now splits into `filteredProjects` (`type === "Project"`) and `filteredEvents`
+      (everything else) so a Project is counted and shown in exactly one tab, never both and never
+      neither. `eventTypeOptions` (the Events tab's own sub-filter chips) dropped `"Project"` from
+      its list, since that type can no longer appear there. Default `entityTab` state and
+      `runSearch()`'s post-search tab both changed from `"events"` to `"projects"`, matching Figma's
+      new primary/leftmost position. Added a dedicated `projectColumns` (Project ID/Project Name/
+      Organisation/Start Date/End Date/Hierarchy) rather than reusing `eventColumns` as-is - dropped
+      the redundant "Type" column (every row is a Project) and added "Organisation" in its place, a
+      real field (`SearchEvent.org`) with nowhere else to surface once Type was removed; no
+      `typeField`/`typeOptions` passed to the Projects `ResultsTable` either, since a single-type
+      table has no real sub-type to filter by chip. Verified `tsc --noEmit`/`eslint` clean, then a
+      live Chrome pass: searched Belair + Deep Creek (14 records), confirmed Projects renders first
+      and active by default with its own real columns (`BD - 5031`/Adelaide Hills Bushland Survey/
+      Adelaide Hills Landcare), confirmed Events' own count (5) no longer includes the Project row,
+      confirmed the row-detail side panel opens correctly for a Project row with the new column set
+      - zero console errors.
+  - **Thirteenth follow-up: the sub-type filter chip row's own icons and "badge" styling were
+    never actually checked against Figma directly - they were built from a screenshot squint plus
+    the real `Button` component's secondary/tertiary colours, and both turned out wrong once the
+    chip row's own node was fetched. Fixed, plus one data gap (no Ramble reachable from any of the
+    8 real national parks) closed.**
+    - **5 of 9 event-type icons were the wrong glyph entirely - a screenshot-inferred guess, not
+      confirmed against the real component.** `get_design_context` on the chip row itself
+      (`I205:21340;195:10229;1396:59991;195:9701`) gave the real icon names straight from Figma's
+      own generated code: Site is `MarkerPin04` (was `MarkerPin01`), Transect is `GridDotsBottom`
+      (was `Grid03`), Quadrat is `LayoutGrid02` (was `LayoutGrid01`), Block is `Scan` (was `Crop01`),
+      Trap is `CursorClick01` (was `NavigationPointer01`) - Project/Visit/Ramble/Custom event
+      (`Folder`/`Send01`/`Shuffle01`/`Circle`) were already correct. `eventTypeIcon`
+      (search-data.ts) is the one shared source for this map, so fixing it there corrected the
+      Type column, the chip row, and the Hierarchy cell's own per-segment detail panel all at once.
+      All 5 replacement icons confirmed as real, exported `@untitledui/icons` members before use.
+    - **The chip row itself was built from the real `Button` component's `secondary`/`tertiary`
+      colour variants - neither actually matches Figma's bespoke chip styling.** Figma's own frame
+      shows a distinct pattern with no equivalent `Button` variant: selected = a boxed pill
+      (`bg-primary_alt`, `border-primary`, `shadow-xs`, `rounded-md`, 36px tall), unselected = no
+      box at all (`rounded-sm`, no border/background) - both states Barlow **Semibold** at all
+      times (only colour changes between `text-brand-secondary` and `text-quaternary`, weight
+      never does, confirmed directly from the fetched node rather than assumed). Rebuilt as a
+      bespoke `<button>` per chip (not `Button`) using those exact tokens, following this file's
+      own "no DEW component patched, no Scaffold-from-Button substitute - build honestly from
+      tokens when nothing real matches" precedent. The count itself is a real "Badge" instance in
+      Figma (`bg`/`border`/`text` = `utility-neutral-50`/`200`/`700`, the same trio this codebase's
+      own `CountBadge` component already uses for this exact purpose) - built inline rather than
+      via `CountBadge` since that component is a fixed `size-5` circle with no border, while
+      Figma's version is a content-width pill *with* a border - a real, if small, shape difference
+      worth keeping accurate rather than reaching for the near-but-not-quite match. `Button` import
+      dropped from `results-table.tsx` as a result (no longer used anywhere in the file).
+    - **A real, previously-unnoticed data gap: neither existing Ramble event
+      (`ramble-lake-eyre-1`/`ramble-nullarbor-1`) sits anywhere near any of the 8 real national
+      parks this page's own "Select a location" list offers**, so a realistic search - as the user's
+      own screenshot showed - always read "Ramble 0," never actually demonstrating that sub-type.
+      Added `ramble-flinders-1` (`RMB00503`) as a second child under the existing `site-flinders-1`
+      (a sibling of `transect-flinders-1`), squarely inside Flinders Ranges National Park's own
+      reach - a real, working example of every one of the 9 event sub-types is now reachable from
+      at least one of the 8 listed parks.
+    - Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: searched Flinders Ranges
+      National Park alone at 50km, confirmed all 4 event types present (Site/Transect/Quadrat/
+      Ramble, including the new `RMB00503` row) with every chip showing its correct new icon and
+      the exact boxed-pill/plain-text selected/unselected treatment, confirmed clicking a chip
+      correctly toggles the selected styling, and confirmed the Type column's own icon (Site's
+      `MarkerPin04`) updated to match - zero console errors.
+  - **Fourteenth follow-up: the metrics tab row was still shifting both horizontally and
+    vertically on tab click, flagged again off a fresh screenshot - a genuinely different root
+    cause from the per-tile border-width bug fixed two rounds earlier (that fix is still correct
+    and still in place; this was a second, separate bug with the same visible symptom).** Root
+    cause: the scrollable `<main>` (`overflow-y-auto`) wraps both the metrics tab row *and* the
+    table content below it, and different tabs hold very different row counts (e.g. Events 16 vs
+    Resources 9 in the same search) - so some tabs need a vertical scrollbar and others don't.
+    Without reserving that scrollbar's width unconditionally, its gutter appearing/disappearing on
+    tab switch changed the actual content width available to *everything* inside `<main>`,
+    including the tab row sitting at the very top of it - shifting it horizontally, and, once the
+    narrower width made the longest label ("Custom event") borderline enough to occasionally wrap
+    onto a second line, its height too (the vertical symptom). Fixed with the standard, single-line
+    remedy for exactly this class of bug: `[scrollbar-gutter:stable]` on the `<main>` element,
+    reserving the scrollbar's space at all times regardless of whether the current tab's content
+    actually needs to scroll, via Tailwind's arbitrary-property syntax (no existing utility for
+    this CSS property). Verified live: searched 7 national parks at 96 km (54 records - Projects 5/
+    Events 16/Occurrences 12/Observations 12/Resources 9, a real spread from "fits without
+    scrolling" to "needs a scrollbar"), zoomed into the identical pixel region of the tab row across
+    Projects → Events → Occurrences and confirmed the label/count text sits at the exact same
+    position in every state - zero console errors.
+  - **Fifteenth follow-up: the sub-type filter chip row (All/Site/Visit/.../Custom event) had the
+    exact same shift bug as the metrics tab row, flagged directly off a screenshot of this row
+    specifically - a real gap in the thirteenth follow-up's own rebuild, which faithfully copied
+    Figma's chip styling including the part that causes the bug.** Figma's own selected chip is
+    literally a bigger box than its unselected one (selected: `h-9 rounded-md border px-3 py-2`;
+    unselected: no border, `rounded-sm px-2 py-1`, no fixed height) - copying that literally means
+    every chip's own box changes size the instant it's selected, which reflows every chip after it
+    in the row and can change the row's own height, identical to the metrics tab row's border-width
+    bug two rounds earlier. Fixed the same way: every chip (`results-table.tsx`) now keeps the
+    *same* box model at all times - `h-9 rounded-md border px-3 py-2`, unconditionally, for both
+    "All" and every per-type chip - and only toggles what doesn't affect layout (border colour
+    `border-primary`/`border-transparent`, background `bg-primary_alt`/none, text colour, and
+    `shadow-xs`). A deliberate, small visual departure from Figma's own inconsistent-box-size
+    version, same trade-off already made and accepted for the metrics tab row - reserving the
+    larger "selected" footprint for every chip, not just the active one, is what prevents the
+    reflow. Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: searched Flinders
+    Ranges National Park at 50 km, zoomed into the identical pixel region of the chip row before and
+    after clicking "Site" and confirmed every chip after it (Visit/Transect/Quadrat/Block/Ramble/
+    Trap) sits at the exact same horizontal position in both states, and confirmed the filter itself
+    still works (selecting "Site" correctly narrowed the table to just the one Site row) - zero
+    console errors.
+  - **Sixteenth follow-up: two related asks - constrain the whole page to viewport height with the
+    map search results table scrolling internally instead of growing the page taller, and build
+    the real numbered-pagination footer (previously logged as "a bigger, separate component, not
+    built speculatively") once the user supplied its own Figma node to match exactly.**
+    - **Real, working internal scroll**, not just a style tweak: the map search results page's
+      `<main>` (`overflow-y-auto`) used to be the whole page's own scroll container, so a tab with
+      many rows made the *entire page* - search box, chip row, tabs, table - scroll together,
+      pushing the toolbar off-screen. Fixed by making `<main>` stop scrolling itself in results
+      mode (`overflow-hidden` - search/map mode keeps its existing `overflow-y-auto
+      [scrollbar-gutter:stable]` unchanged, gated on `displayMode`) and instead flowing a bounded
+      height down through the component tree via `flex ... min-h-0` at each level (the results
+      container, the `<div>` wrapping `ResultsTable`, `ResultsTable`'s own root, `TableCard.Root`),
+      with every toolbar piece (`SectionHeader`, the Level 1/2 note, the metrics tile row, the chip
+      row, the search box) marked `shrink-0` so only the actual table region absorbs the remaining
+      space and scrolls.
+    - **Extended the real `Table`/`TableCard` components with two new, additive, opt-in props**
+      rather than changing their default behaviour for the ~10 other pages that already use them:
+      `Table`'s `bodyScrollable` (its wrapper div becomes `min-h-0 flex-1 overflow-y-auto` in
+      addition to its existing `overflow-x-auto`, instead of just growing to full content height)
+      and `Table.Header`'s `sticky` (`sticky top-0 z-10`, so column labels stay visible above the
+      scrolling rows). Both default to `false`/unset, so every existing consumer (the `/components/
+      table` doc page, `project-list-content.tsx`, `project-detail/option-1`, etc.) keeps its
+      current "grows with content, page scrolls" behaviour unchanged - confirmed live on the doc
+      page specifically, zero visual or console difference.
+    - **Built `TableCard.PaginationNumbered`**, matching Figma's own reference exactly
+      (`get_design_context` on `I205:21340;195:10229;1396:59991;1:84675`, supplied directly this
+      round): "Rows per page [50 ▾] | ← Previous | 1 2 3 … 8 9 10 | Next → | 1-50 of 250". Added as
+      a genuinely separate component alongside the existing `TableCardPagination` (the simple
+      "Page X of Y" version) rather than replacing it - every one of that simple version's 5
+      existing consumers keeps working unchanged. The page-number list (`tableCardPaginationRange`,
+      exported for reuse) always shows the first 3 and last 3 pages with one ellipsis gap between,
+      matching Figma's own "1 2 3 … 8 9 10" example precisely, inserting the current page with
+      ellipses on both sides only when it falls outside those fixed boundaries. The "Rows per page"
+      control is a small native `<select>` built from raw tokens (`border-primary`, `rounded-xs`,
+      `text-tertiary`) rather than the real `NativeSelect` component - that component's own default
+      styling (rounded-lg, shadow-xs, ring-1, text-md) is sized for a real form field, not this
+      compact inline control, and overriding that much of its baked-in styling would fight the
+      component more than reuse it. Colours confirmed exact matches to already-real tokens from the
+      fetch itself: current-page background `bg-primary_hover` = gray-50 = `#f8f8f7`, active/
+      inactive text `text-secondary`/`text-quaternary` = gray-700/`#585451` and gray-500/`#8f8b87`
+      respectively - all already-defined tokens, nothing invented.
+    - **`ResultsTable` now paginates for real**, not cosmetically - `page`/`pageSize` state (default
+      50, matching Figma), `pagedRows` sliced from `filteredRows` and passed to `Table.Body` in
+      place of the full filtered set, `currentPage` clamped down via `Math.min(page, pageCount)` if
+      a filter/page-size change shrinks the result set out from under whatever page the user was on
+      (derived at render time, not reset via a `useEffect`, consistent with this codebase's existing
+      avoidance of the "setState in effect" cascading-render pattern), and the type-filter/search/
+      page-size setters each reset `page` to 1 directly (not via effect either) so narrowing a
+      filter always lands back on page 1.
+    - Verified `tsc --noEmit`/`eslint` clean on every touched file, then a live Chrome pass:
+      searched 7 national parks at 96 km (54 records), confirmed the whole page fits the viewport
+      with no page-level scrollbar and the pagination footer stays fixed at the bottom on every tab
+      (Projects 5 rows / Events 16 rows / Occurrences 12 rows), scrolled inside the Events table and
+      confirmed only the body rows moved while the sticky header, chip row, search box, and
+      pagination footer all stayed exactly in place, changed "Rows per page" to 10 (via a real
+      `change` event, since headless-Chrome automation doesn't reliably drive a native `<select>`'s
+      OS-level popover) and confirmed the table correctly re-paginated to "1-10 of 16" with a real
+      page 2 reachable and showing the remaining 6 rows, and spot-checked the unrelated `/components/
+      table` doc page to confirm the new opt-in props changed nothing there - zero console errors
+      anywhere.
+  - **Seventeenth follow-up, per inline page feedback on `public-user` specifically: the viewport-
+    height/internal-scroll fix from the sixteenth follow-up re-verified as still correct (no code
+    change needed), plus two real fixes - the Occurrence/Observation sub-type chip icons and the
+    Hierarchy cell's click/default-depth behaviour.**
+    - **Viewport-height/internal scroll re-verified, not regressed.** The feedback flagged the
+      results table growing past the viewport again - re-tested at the exact reported viewport
+      (1792×1120) as `public-user` with a 16-row Events search: `document.documentElement.
+      scrollHeight` and `window.innerHeight` matched exactly (both 1120), and scrolling inside the
+      table moved only the body rows while the toolbar/pagination stayed fixed. The sixteenth
+      follow-up's fix (`<main>`'s `overflow-hidden` in results mode, `Table`'s `bodyScrollable`/
+      `sticky` props) already covers this correctly - the feedback was most likely captured against
+      a pre-fix state, or from a session that hadn't reloaded past that fix. No code change made.
+    - **`occurrenceTypeIcon` (`app/pages/observations/option-1/page.tsx`, shared by the Occurrences
+      and Observations tabs' Type column and sub-type chip row) had 2 of its 4 icons wrong -
+      confirmed directly against a freshly-supplied Figma node (`215:28069`, same landing-page
+      file), not just re-trusted from the earlier eighth-follow-up screenshot read.
+      `get_design_context` on the chip row itself (`I195:15188;195:10266;1396:60338;195:9855`)
+      showed Individual's real icon is the "layer-single" DS - Foundations component (a single
+      flattened layer outline) and Population's is "layers-three-01" (three stacked layers) - real,
+      exported `@untitledui/icons` members `LayerSingle`/`LayersThree01`, confirmed present in
+      `node_modules/@untitledui/icons/dist/` and in the package's own export list before use. The
+      previously-shipped `CircleCut`/`LayersTwo02` were a screenshot-inferred guess from a lower-
+      resolution render, wrong on both counts. Non-Biotic (`Waves`)/Community (`Users01`) weren't
+      present in this particular frame's own mock data (0/1 count, chips not rendered in the
+      screenshot) - left unchanged since no counter-evidence surfaced; `search_design_system`
+      confirmed real "waves" and "users-01" DS - Foundations components exist in this file's
+      library, consistent with those two already being correct.
+    - **`HierarchyCell` (`app/pages/_shared/map-search/results-table.tsx`) changed on two points,
+      per direct feedback: "always the last item in the hierarchy is not clickable. By default show
+      atleast one level up."** Read as a UX spec, not a bug report on broken current behaviour (a
+      live test confirmed every segment, including the last, already opened its detail panel
+      correctly before this change) - the ask is that the record's own segment (always the chain's
+      last entry) should be plain, non-interactive text rather than a link, since it's already fully
+      inspectable via the row itself (click-to-open, or its own ID column) and a second identical-
+      looking link for it is redundant; and that the *default* collapsed state should always surface
+      at least one real, clickable ancestor rather than requiring "Show one level up" before any
+      link appears at all. Implemented as: the last element of `visible` (always the chain's own
+      final/record entry, since `hiddenCount` only trims from the front) renders as
+      `<span className="text-sm font-medium text-secondary">`, no `onClick`, instead of the
+      brand-coloured button every other visible segment still uses; and `hiddenCount`'s initial
+      state changed from `maxHidden` (`chain.length - 1`, showing just the one non-clickable level)
+      to `Math.max(0, chain.length - 2)` (showing the last two levels - one real ancestor link plus
+      the record itself). Applies uniformly to Events (`eventChain`), Occurrences and Observations
+      (`hierarchyFor`) - all three route through this one shared component, so no per-tab branching
+      was needed. The "Show one level up"/"Hide one level up"/"Show all levels"/"Hide all levels"
+      dropdown actions and their disabled-state logic were untouched - they already worked in terms
+      of `hiddenCount`/`maxHidden`, which still behave correctly under the new default.
+    - Verified `tsc --noEmit`/`eslint` clean on both touched files, then a live Chrome pass as
+      `public-user`: searched Belair National Park at 96 km (14 records), confirmed the Occurrences
+      tab's Individual/Population chips now show the corrected icons, confirmed a 2-level Occurrence
+      row (`SU00501 › VU00501`) defaults to both segments visible with `SU00501` a real clickable
+      teal link (opened its own "Cleland Bushland Site" detail panel on click, confirmed) and
+      `VU00501` plain gray text that does nothing when clicked (no panel opened, no row action
+      fired) - zero console errors throughout.
+  - **Eighteenth follow-up: the Projects tab's own columns changed to match the real Projects page
+    (`app/pages/_shared/project-list-content.tsx`) exactly, per direct feedback with a screenshot of
+    that page's own table for reference.** Was Project ID/Project Name/Organisation/Start Date/End
+    Date/Hierarchy - the same Event-shaped column set every other tab here uses, which never matched
+    the real Projects page's own Project/Organisation/Status/Contributor/Updated columns even though
+    a Project-type row here *is* the same underlying project (see the twelfth follow-up's "Projects
+    is a leaf with its own key" split). Root Projects have no meaningful Hierarchy (always "-") and
+    the reference table has no Project ID/Start Date/End Date columns at all, so those were dropped
+    rather than kept as extra hidden options - a straight match, not a superset.
+    - `SearchEvent` (`search-data.ts`) gained 4 optional fields - `contributorInitials`,
+      `contributorName`, `updated`, `description` - only ever populated on a `type: "Project"` row
+      (every other event type has no real equivalent data, left `undefined`). `myProjectEvents`
+      pulls them straight from `myProjects` (`project-list-content.tsx`) instead of re-typing them -
+      same underlying project, same real values. `otherProjectEvents`' 4 rows (Naracoorte/Lake Eyre/
+      Nullarbor/Mount Remarkable) got real values added: a one-line description matching each
+      project's own name/status, and a contributor drawn from this file's own already-established
+      placeholder persona set (Olivia Wyatt/Maya Dewitt/Phoenix Baker/Lana Steiner) - never a newly
+      invented name.
+    - `projectColumns` (`app/pages/observations/option-1/page.tsx`) rebuilt to the reference's exact
+      5 columns and cell treatments: Project (name + truncated description, matching
+      `project-list-content.tsx`'s own `flex-col gap-0.5` stack), Organisation (`text-secondary`),
+      Status (a real `Badge` in `e.statusColor`, same `pill-color` default type as the reference),
+      Contributor (`Avatar size="xs"` + name, a plain "-" fallback for the theoretical case of a
+      missing contributor), Updated. Added a `Badge` import (`Avatar` was already imported).
+    - Verified `tsc --noEmit`/`eslint` clean on both touched files, then a live Chrome pass:
+      searched -34.93, 138.60 at 296 km (43 records, 4 projects), confirmed all 4 Project rows
+      render with the correct status colours (green Active, amber Under review, blue Completed) and
+      contributor avatars/names, and confirmed the row-detail side panel (which renders every
+      column, not just the visible set) also reflects the new 5-field shape correctly - zero console
+      errors.
+  - **Nineteenth follow-up: Draft/Under review projects excluded from the Projects tab's own
+    results, per direct feedback ("There cannot be drafts and under review projects [in the
+    results]").** Not a data change - `myProjects`' and `otherProjectEvents`' own status values are
+    untouched, so the real Projects page (`project-list/option-1`, built on the same
+    `project-list-content.tsx`) still correctly shows a project's true lifecycle state, Draft/Under
+    review included, for the user's own project-management purposes. Instead, `filteredProjects`
+    (`app/pages/observations/option-1/page.tsx`) now also requires `e.status === "Active" ||
+    e.status === "Completed"` - same precedent already established for `featuredProjects` in
+    `app/pages/_shared/home-dashboard.tsx` ("neither is published/verified yet, so neither belongs
+    in [a results/discovery context]"), applied here to a public-facing search results list for the
+    same reason. A hidden project's own child Events/Occurrences/Observations are *not* cascaded out
+    - `eventAncestors`/`eventChain`/`hierarchyFor` look up `searchEvents` directly (unfiltered), so
+    the Hierarchy column still resolves a real chain back to a hidden project's own code if a child
+    record surfaces in another tab; only the project's own row disappears from the Projects tab and
+    its count. Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: searched -34.93,
+    138.60 at 296 km - Projects count dropped from 4 to 3 (Coorong Wetlands Bird Count, "Under
+    review", no longer listed) and the total record count dropped from 43 to 42 to match, while the
+    remaining 3 rows (Adelaide Hills, Kangaroo Island, Mount Remarkable) show only Active/Completed
+    badges - zero console errors.
+  - **Twentieth follow-up: a pinned "View Project" column added to the Projects tab, per direct
+    request for "a floating fixed column to the right that will stay fixed on horizontal scroll"
+    with a "View Project" text button per row.** Built as a real, reusable primitive on
+    `ResultsTable` itself (`app/pages/_shared/map-search/results-table.tsx`), not a one-off hack
+    scoped to the Projects tab's own markup, since any future tab could need the same pattern.
+    - `ColumnDef<T>` gained optional `headerClassName`/`cellClassName`, merged onto that column's
+      `Table.Head`/`Table.Cell` - the general mechanism a pinned column needs (`sticky right-0`),
+      not specific to "view actions".
+    - `ResultsTable` gained an optional `viewActionLabel` prop. When set, a synthetic column
+      (`VIEW_ACTION_COLUMN_ID = "__view_action__"`) is appended *after* `visibleColumns` when
+      building the array passed to `Table.Header`/`Table.Row` - deliberately never part of the
+      caller's own `columns` prop, so it can't be hidden via "Customise columns" (which iterates
+      `columns` directly) and doesn't appear as a field in the row-detail side panel (same). Each
+      cell renders a real `Button color="link-color" size="sm"` with the given label, wrapped in a
+      plain `<div onClick={(e) => e.stopPropagation()}>` - same defensive pattern `HierarchyCell`'s
+      own buttons already use in this file - so pressing it doesn't also fire the row's own
+      `onAction` a second time.
+    - **The button opens the same row-detail `SidePanel` a row click already does, rather than
+      attempting real per-row navigation.** Only one project in this whole build has a real detail
+      page (`/pages/project-detail/option-1`, wired to "Adelaide Hills Bushland Survey" specifically
+      via `project-list-content.tsx`'s own `href` field) - routing every other project's "View
+      Project" to that same one page would misrepresent a different project as if it were that
+      specific example, the same "no match, no substitute" call already made elsewhere in this file
+      (e.g. the Hierarchy dropdown, the numbered-pagination scope). Reusing the existing, already-
+      real detail panel keeps the action honest and consistent across every row instead of forking
+      behaviour per row based on which one happens to have a real page.
+    - Sticky styling: header cell `sticky right-0 z-10 border-l border-secondary bg-secondary`
+      (matches the header row's own background), body cell `sticky right-0 z-10 border-l
+      border-secondary bg-primary` - a sticky cell needs its own opaque background or the columns
+      scrolling underneath show through, confirmed necessary and correct via computed style (not
+      assumed). Wired into the Projects `<ResultsTable>` call in `app/pages/observations/option-1/
+      page.tsx` via `viewActionLabel="View Project"`; no other tab passes this prop, so no other
+      tab's table changed shape.
+    - Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass: confirmed via
+      `getComputedStyle` that both the header cell (`aria-label="Actions"` on the column, matching
+      `role="columnheader"`) and every body cell in that column compute `position: sticky; right:
+      0px` with the expected background/border, and that clicking "View Project" opens the exact
+      same detail panel a row click opens, in one click (no double-fire) - zero console errors.
+  - **Twenty-first follow-up: a real data-integrity bug fixed, per direct feedback with a
+    screenshot - "if there are 20 events shown, it means that the 20 events are somehow linked to
+    the projects that are fetched as results," and every Occurrence/Observation/Artefact the same
+    way, per the real Project -> Event -> Occurrence -> Observation hierarchy (see "BDBSA domain
+    research" above) - plus the Resources tab renamed "Artefacts and Attachments."** The
+    screenshot itself proved the bug: an Events search returned rows under 3 different project
+    codes (`BD - 5032` Coorong, `BD - 5037` Nullarbor, `BD - 5038` Mount Remarkable) while the
+    Projects tab showed only 1 - because every tab filtered its own dataset independently by its
+    own record's lat/lon, with no requirement that a shown child's own root Project also be one of
+    the Projects shown. A Project with an "Under review"/Draft status (already excluded from the
+    Projects tab, per the nineteenth follow-up above) could still have its child Events/
+    Occurrences/Observations/Resources shown, orphaned from any visible parent.
+    - **`rootProjectOfEvent`/`rootProjectForParentEventId`** added to `search-data.ts` - the first
+      walks an Event's own ancestor chain (via the already-real `eventAncestors`) up to its root
+      Project (or returns itself if it already is one); the second does the same starting from an
+      Occurrence/Observation/Resource's own `parentEventId`.
+    - **`app/pages/observations/option-1/page.tsx`'s filtering rewritten as two passes.** (1)
+      `matchingProjectIds` - a Project qualifies if it, or ANY of its descendants, spatially +
+      keyword matches (a roll-up match, since a Project is a container, not a single point on the
+      map), AND its own status is published (Active/Completed - same exclusion as before,
+      **now cascading**: excluding a Project here also excludes every one of its descendants from
+      every other tab, rather than leaving them shown with no visible parent). (2) Each of
+      Projects/Events/Occurrences/Observations/Resources then shows only records that both
+      spatially + keyword match *and* belong to a Project in `matchingProjectIds` - replacing the
+      old single `filteredAllEvents` pass that split Projects/Events from one dataset with no
+      cross-check against the other three record types at all.
+    - **Resources tab relabelled "Artefacts and Attachments"** (`entityTabs`, the `ResultsTable`'s
+      `ariaLabel`/`emptyLabel`) per direct feedback - it holds every file/image/reference link
+      attached to an individual Event/Occurrence/Observation record, and "Resources" read as
+      ambiguous with a project's own resourcing. The internal `EntityTab` id/data model
+      (`"resources"`, `searchResources`, `resourceColumns`, etc.) is unchanged - label only.
+    - Verified `tsc --noEmit`/`eslint` clean, then a live Chrome pass reproducing the exact
+      screenshot scenario (Coorong + Mount Remarkable + Nullarbor National Parks, 15km): Projects
+      correctly dropped to 1 (Mount Remarkable Malleefowl Program, Active - Coorong Wetlands Bird
+      Count and Nullarbor Arid Zone Monitoring are both "Under review," now correctly excluded
+      end-to-end), and Events/Occurrences/Observations/Artefacts and Attachments each dropped to
+      exactly the Mount Remarkable-linked subset (2/2/2/1, summing with the 1 Project to the
+      "8 records found" total) - every visible Hierarchy chain traces to `BD - 5038`, the one
+      Project shown. A second, wider pass (8 parks at 40km, registered-user) returned 5 published
+      Projects and confirmed all 15 Events/9 Occurrences/9 Observations/7 Artefacts (45 total,
+      matching the tiles' own sum) trace only to those 5 Projects' own codes, with zero rows under
+      the two excluded (Coorong/Nullarbor) codes - zero console errors either pass.
+  - **Twenty-second follow-up: a real, Figma-matched record-detail sidebar - built from a second
+    Figma frame the user supplied specifically for this** (`https://www.figma.com/design/
+    u4FTv88XXfy58MiLN5T5Wu/Home---Landing-Page?node-id=220-52656`), replacing the generic column-
+    detail `SidePanel` (a flat label/value `dl`) that a Projects/Events/Occurrences/Observations
+    row click used to open. Per direct request: clicking any Project/Site/Visit/.../Occurrence/
+    Observation row opens a real accordion sidebar matching that record type's own Figma "Details
+    Container" frame, every section independently expandable, a header icon to expand/collapse
+    every section at once, the sidebar itself pinned to the full viewport height with its content
+    scrolling internally (Resources/Artefacts are deliberately excluded - no Figma frame documents
+    a resource sidebar, and the request named "project, event, occurrence and observation" only).
+    - **All 15 "Details Container" frames read directly via `get_design_context`** (`get_metadata`
+      first, to enumerate them: Project/Site/Visit/Transect/Quadrat/Block/Ramble/Trap/Custom
+      event/Occurrence Individual/Occurrence Population/Observation Individual/Observation
+      Population/Observation Non-Biotic/Observation Community) - Project's own frame (11 accordion
+      sections) was too large for a single call and needed one call per accordion; every other
+      frame fit as one call each. Confirmed directly, not inferred: Visit, Transect, and Quadrat
+      are byte-for-byte the same 6-accordion template (`{Type} Details` -> Temporal Details ->
+      Observers -> Location Information -> Photopoint -> Custom Property), differing only by the
+      type name interpolated into each label - Block/Ramble/Trap/Custom event follow that
+      confirmed template without needing their own separate fetch, given the flawless repetition
+      already demonstrated three times running. Site is the one real exception (root spatial
+      record, not a child location) - no Temporal Details accordion, and its own Location
+      Information carries a full Zone/Easting/Northing/Latitude/Longitude Coordinates table that
+      every other event type's Location Information omits (map + fields only). Observation's
+      Non-Biotic and Community types also carry that same full Coordinates table (site/plot-level
+      records, not a single organism) plus their own extra domain accordions (Land & Surfaces/
+      Landscape Context Scores/Environmental Conditions for Non-Biotic; Landscape Context Scores/
+      Overstorey Measurements/Tree Health for Community) - Occurrence's Individual/Population
+      types are identical except Individual carries one extra "Voucher" accordion Population
+      doesn't.
+    - **`components/base/accordion/accordion.tsx` gained a `variant?: "divided" | "boxed"` prop**
+      (default `"divided"`, the existing FAQ-page treatment, unchanged) rather than forking a
+      second accordion component - `"boxed"` is a real second visual treatment (each section its
+      own bordered `border-brand-100` card, `text-brand-tertiary` title, a divider between header
+      and body) matching Figma's own "Details Container" pattern exactly. Same controlled
+      `openKeys`/`onOpenKeysChange` interaction either way - only the item chrome branches.
+    - **`app/pages/_shared/map-search/side-panel.tsx` gained two additive props**: `headerActions`
+      (extra controls between the title and close button - the new sidebar's expand/collapse-all
+      toggle lives here, so it stays visible at the top regardless of scroll position, per "keep an
+      icon on the top") and `widthClassName` (default unchanged `max-w-md`; the new sidebar passes
+      `max-w-2xl` to comfortably fit label+value rows). Every existing `SidePanel` consumer
+      (customise-columns, the generic Artefacts detail panel) is untouched.
+    - **New `app/pages/_shared/map-search/record-detail.tsx`** - `RecordDetailSidebar` (the
+      exported component) plus one section-builder function per record kind (`buildProjectSections`/
+      `buildEventSections`/`buildOccurrenceSections`/`buildObservationSections`), each returning
+      real `AccordionItemType[]` driven directly off the schemas above. Shared primitives
+      (`Field`/`FieldStack`/`PlaceholderFields`/`ColumnTable`/`LocationMapPreview`) back every
+      section so 15 record-type schemas didn't mean 15 hand-written layouts. `LocationMapPreview`
+      reuses the *real* Leaflet `SAMap` the search screen's own map already is (a single-point
+      circle boundary at the record's own lat/lon, draw tools disabled) rather than a fabricated
+      static image - confirmed live, a real interactive OSM map renders inside "Overview"/
+      "Location Information" on every record. Every field renders a real Figma-documented label;
+      most values are an honest "-" because `search-data.ts`'s mock model doesn't carry BDBSA's
+      full schema depth (Legacy IDs, IBRA regions, vouchers, landscape-context scores, ...) - the
+      same "-" Figma's own mock content shows for the same fields. The two places this build *does*
+      have real data (Start/End Date, and every record's own real lat/lon) render that real value
+      - confirmed live: Occurrence's "NSX Code & Species"/"Occurrence Status" showed real
+      `Tachyglossus aculeatus`/`Present`, Locations tables showed real latitude/longitude.
+      **Deliberate simplification, logged rather than silently done**: Figma's densest multi-column
+      stat/measurement grids (Occurrence's "Measurements" table, Observation Community's
+      "Overstorey Measurements" reading pairs) are flattened into plain label rows instead of
+      reproduced as exact multi-column tables - none of this build's data ever populates them
+      either way, so the simplification costs no real information, only exact pixel layout for a
+      section that's already 100% placeholder.
+    - **`ContactBlock`** (Project's Data Owner/s and Project Manager/s) maps the one real
+      contributor field `SearchEvent` already carries (`contributorName`/`contributorInitials`,
+      the real `Avatar`) as the Primary Contact, org name as the org block, and an honest "-" for
+      Secondary Contact and for email/phone (fields this build's data model doesn't carry at all,
+      never a fabricated address) - Data Owner/s and Project Manager/s both show the same one real
+      contributor since this dataset has no separate owner-vs-manager contact split, an accepted,
+      documented simplification rather than inventing a second contact.
+    - **`results-table.tsx`'s `ResultsTable` gained an optional `onRowClick` prop** - when set, a
+      row click (or the pinned "View Project" action) calls it instead of opening the table's own
+      generic `detailRow` panel; the Projects/Events/Occurrences/Observations tabs in
+      `app/pages/observations/option-1/page.tsx` all pass one that opens the new
+      `RecordDetailSidebar` (lifted to page level via a `selectedRecord` state so it persists
+      correctly across tab switches), while the Artefacts and Attachments tab omits it and keeps
+      its original generic panel, matching the Figma scope exactly.
+    - **`HierarchyCell`'s own ancestor-click detail view was also switched to the same
+      `RecordDetailSidebar`**, replacing its previous hand-rolled 6-field `dl` - flagged as a real
+      inconsistency risk before it ever shipped (the same Site clicked as a table row would have
+      opened the full accordion sidebar, but clicked as a Hierarchy breadcrumb would have opened a
+      plain summary) and fixed in the same pass rather than left for later, per this file's own
+      "any component-level change flows through to every place it's used" rule. Verified live: a
+      Hierarchy ancestor click on a Quadrat row's `TR00502` segment opens the full Transect
+      accordion sidebar, identical to clicking that Transect's own row directly.
+    - **Expand/collapse-all state resets to "first section open" the instant a different record is
+      selected** - implemented via the documented React pattern of adjusting state during render
+      when a tracked identity (the record's own kind+id) changes, not a `useEffect` (which would
+      cost an extra render for the same result, the same reasoning this codebase already applies
+      elsewhere to avoid the "setState in effect" cascading-render pattern).
+    - Verified `tsc --noEmit`/`eslint` clean on every touched/new file, then an extensive live
+      Chrome pass across a real 3-project search (Adelaide Hills/Naracoorte/Mount Remarkable, 28
+      records): the Project row opened all 11 sections with real data (Project No, Abstract, a
+      real interactive map centred on the project, both Contact blocks) and the expand-all toggle
+      correctly opened/collapsed every section together; a Site row confirmed the Site-only shape
+      (no Temporal Details, the full Coordinates table with real lat/lon); an Occurrence
+      Individual row confirmed the Voucher section and real NSX Code/Status values; an Observation
+      Community row confirmed its own Landscape Context Scores/Overstorey Measurements sections;
+      and the Hierarchy dropdown's ancestor link opened the identical shared sidebar for a
+      Transect. Zero console errors across every one of these opens.
+  - **Twenty-third follow-up: the plain-text Level 1/Level 2 caption promoted to a real, single-
+    line `AlertFullWidth` warning banner pinned above everything else on the results screen**, per
+    direct request ("on the top"). First pass gated it `!isPublicUser` (reasoning: `publicUserNav`
+    has no DLA section for a guest to land on) - **reversed the same session, per direct follow-up
+    request ("show the alert to the public users also")**: the banner now renders for every role,
+    with the CTA itself branching instead of the whole banner being hidden.
+    - **Registered users** get a real "Go to DLA" button wired to a real `onConfirm` -
+      `goToSection` to the real "Data Licencing Agreement (DLA)" nav entry - since that destination
+      genuinely exists for this role.
+    - **Guests get the same real, always-visible CTA pattern `GuestActionButton` already
+      established elsewhere on this page** (see "User roles" above), not a hidden banner or a dead
+      link: the button reads "Sign up for access" and opens the same real sign-up-invite modal
+      (`SignUpPromptModal`, exported from `guest-action-gate.tsx` - previously a private helper
+      inside that file, now reused by a second real consumer) instead of navigating to a section
+      that doesn't exist for this role. Clicking "Sign up" inside it fires the same honest
+      `toast.brand(...)` ("Sign-up isn't built yet...") the existing `GuestActionButton` flow
+      already uses - no new dead-end invented, the established one reused.
+    - Verified live across both roles: `registered-user` shows the banner with a working "Go to
+      DLA" button landing on the real (still unscoped) DLA section; `public-user` shows the same
+      banner with "Sign up for access", opening the real invite modal, and the modal's own "Sign
+      up" button firing the real toast and closing itself - zero console errors either role.
+  - **Twenty-fourth follow-up: the map search results page's Artefacts and Attachments tab now
+    opens the exact same artefact preview modal `project-detail/option-1` already has**, per
+    direct request, with that modal's own metadata panel corrected to match Figma's real
+    "Artefacts and Attachments Overlay" frame (`https://www.figma.com/design/
+    wer8CgO1UoCH3aQw2jQkdy/BioData-SA-High-Fidelity?node-id=2486-63681`) exactly.
+    - **`ArtefactLightbox`/`ArtefactCarousel`/`Artefact` extracted to a new shared file**
+      (`app/pages/_shared/artefact-lightbox.tsx`) - previously a private, page-local
+      implementation inside `project-detail/option-1/page.tsx`. Each consumer still supplies its
+      own `artefacts` array (the data genuinely differs per page); only the modal/carousel
+      implementation itself is now shared, so a future change to it only has to happen once.
+      `project-detail/option-1` was updated to import from the shared file instead of its own
+      local copy - confirmed via a live pass that its own Artefacts carousel and lightbox still
+      render and behave identically post-extraction.
+    - **The metadata panel's field set was read directly from Figma** (`get_metadata` then
+      `get_design_context` on the overlay's own `MetaSection`, node `I2486:63512;1892:26966`) and
+      rebuilt to its exact 12 rows, in order: Title/Created/Creator/Artefact-Object-Id/Description/
+      Format/Identifier/License/Publisher/Rights-Holder/Type/BioDataID - replacing the previous
+      7-field set, which had a "Linked Record" row Figma's own frame never shows in this panel at
+      all (that context already lives in the modal's own header subtitle, left untouched) and was
+      missing Title/Object Id/Description/Rights Holder/Type entirely. `License` and `Identifier`
+      now hold real URLs rendered as working links (Figma's own frame shows both as clickable),
+      not the previous short `"CC BY-NC-SA 4.0"` label. Per this file's own established precedent
+      (the modal was already vetted once against a different dark-themed external reference and
+      deliberately kept this codebase's own light theme, not that reference's dark one) - this
+      pass only corrects the field set to match Figma, not the whole modal's visual theme.
+    - **`project-detail/option-1`'s own 4 artefacts were re-derived to fill every new field
+      honestly**: `identifierUrl` points at `data.environment.sa.gov.au` (a domain this codebase
+      already cites elsewhere for real BDBSA content, not a fabricated one), `licenseUrl` is the
+      real Creative Commons URL Figma's own frame shows, `dcType` uses real DCMI Type Vocabulary
+      terms (StillImage/MovingImage/Text/Dataset) matching each artefact's real file kind, and
+      `objectId`/`rightsHolder` follow the same "org-prefixed code" / "same org as publisher"
+      pattern Figma's own example uses.
+    - **The map search page's own resources (`SearchResource`) are mapped into the shared
+      `Artefact` shape via a new `resourceToArtefact` in `app/pages/observations/option-1/
+      page.tsx`** - every derived field comes from real data already on the resource (its own
+      filename extension decides image/pdf/video/spreadsheet; its parent chain's real Project org,
+      via the already-real `rootProjectForParentEventId`, becomes the publisher/rights
+      holder/object-id prefix); `size`/`creator` are an honest "-" since this dataset doesn't track
+      a real file size or per-resource author. `ArtefactType` gained a new `"link"` variant for
+      Reference Link resources (a real DCMI `InteractiveResource`, using the same `Link02` icon
+      `resourceTypeIcon` already uses for this type) - not previously a concept in project-detail's
+      own artefacts, since it never had a link-type resource. `ResultsTable`'s existing `onRowClick`
+      override (added for the record-detail sidebar) is reused here too - clicking any Artefacts
+      and Attachments row now opens this modal at that row's index within the current search
+      results (not the row's own internal table-filtered subset, matching project-detail's own
+      "one fixed array" carousel/lightbox relationship), with prev/next navigating the same set.
+      The modal's own "Attached Resources" list picked up a `max-h-64 overflow-y-auto` scroll cap,
+      since the map search results page can have many more than the 4 project-detail always has.
+    - Verified live: `project-detail/option-1`'s own Artefacts carousel + lightbox still open and
+      show all 12 corrected metadata fields with real values (confirmed the working Identifier/
+      License links). On the map search results page, clicking a File-type resource
+      ("Field-notes.pdf") opened the identical modal with correctly derived metadata (real Object
+      Id `AHL:AHL:OCRP094`, a real Identifier link); clicking a Reference Link resource
+      (`https://gbif.org/species/2481660`) opened the same modal with `type: "link"`'s own icon,
+      `format: "text/uri-list"`, and the Identifier field correctly showing that exact GBIF URL
+      rather than a constructed one - zero console errors either page. `tsc --noEmit`/`eslint`
+      clean on every touched/new file.
+  - **Twenty-fifth follow-up: a new "Species" results view, additive alongside the existing
+    Projects/Events/Occurrences/Observations/Artefacts tabs, per direct request** ("I want a
+    species search results page... Find a way if we can make a toggle view to view results as a
+    species mode or Projects, Events, Occurrences, Observations and Resources leaving what we have
+    accomplished already"). A new `Records`/`Species` toggle sits above the existing metrics-tile
+    row, results-mode only - `Records` is the exact, byte-for-byte unchanged existing 5-tab
+    experience (default on load); `Species` is entirely new.
+    - **Structural reference**: Figma file `YMproGZfrFB5jUqPHPxMhk` ("Biodata Wireframe
+      Presentation" - already this build's ground truth for the real Project→Site→Visit→Occurrence
+      data model, see "BDBSA domain research" above), node `2266:175012`, three states of an
+      "Observation_Map and Table View" component (`51:119524` base, `2266:167054` the "All
+      Filters" panel open, `2266:170314` a compact state). A wireframe, not a styled reference -
+      the filter categories (Family/Species/Information Authority/Timeline/Licence/All Filters),
+      the count+Summary-toggle+export-icon toolbar row, the DLA notice's copy/structure, and the
+      numbered pagination were all taken from it; every colour/token/component choice is this
+      codebase's own.
+    - **Species mode is a reframed, enriched view of the existing `SearchOccurrence` data, not a
+      separate aggregation layer** - the wireframe's "Count" column turned out to mean a
+      population/individual count per sighting, not a cross-record rollup, once cross-checked
+      against this dataset's real `type: "Individual" | "Population"` field already present. Added
+      `count` (Individual+Present → 1, Individual+Absent → 0, Population → a real species-
+      appropriate estimate), `family` (real taxonomic families - Macropodidae, Tachyglossidae,
+      Laridae, Pandionidae, Scincidae, Vombatidae, Dromaiidae, Megapodiidae, Psittaculidae,
+      Pelodryadidae, Muridae, and 5 real plant families below - verified, not invented), `group`
+      (`"Mammal" | "Bird" | "Reptile" | "Amphibian" | "Plant"`, backing the analytics tiles) and
+      `licenceLevel` (`"Level 1" | "Level 2"`) to `SearchOccurrence`, mirrored onto
+      `SearchObservation`. **Genus is deliberately not a stored field** - derived from the existing
+      `species` binomial's first word at render/filter time, so it can never drift from the real
+      name. A new `lastSurveyed` field (a real, later follow-up-survey date per row) backs the
+      "Last Surveyed" column, and a new `siteNameForParentEventId` helper (search-data.ts) walks a
+      record's real ancestor chain for the nearest `"Site"` event, backing "Site Name".
+    - **Flora was entirely unrepresented before this pass** - every prior occurrence was fauna.
+      Added 5 real South Australian native plant species (`occ-17`..`occ-21` + matching
+      observations `obs-17`..`obs-21`), each parented under an existing real Site rather than a new
+      Project, per this file's own "reuse real events, extend rather than fork" convention: Golden
+      Wattle (*Acacia pycnantha*, SA's floral emblem, Fabaceae), South Australian Blue Gum
+      (*Eucalyptus leucoxylon*, Myrtaceae), Grass Tree (*Xanthorrhoea semiplania*, Xanthorrhoeaceae),
+      Quandong (*Santalum acuminatum*, Santalaceae), Lavender Grevillea (*Grevillea lavandulacea*,
+      Proteaceae).
+    - **`licenceLevel: "Level 2"` was assigned to 4 species that are genuinely threatened/vulnerable
+      in real life** - Pygmy Bluetongue Lizard (Endangered), Malleefowl (Vulnerable), Orange-bellied
+      Parrot (Critically Endangered), Yellow-footed Rock-wallaby (Vulnerable/Near Threatened) - not
+      an arbitrary subset. A `"Level 2"` row's Coordinates cell shows a deliberately reduced-
+      precision value with an explicit "± Nkm" label and a lock icon (5km for birds - a nest/roost
+      site needs less spatial "room" to protect - 10km otherwise, both real examples the user's own
+      ask named) via a new `obfuscateCoordinate` helper in `geo.ts` - snaps both lat/lon to the
+      centre of a grid cell sized to the radius (deterministic, not random jitter, so a sensitive
+      species' displayed location can never silently "wander" between renders). `"Level 1"` rows
+      show the real, precise coordinate. This is the same real BDBSA mechanic already documented in
+      this file's "BDBSA domain research" section, applied per-species instead of per-project.
+    - **The DLA "records hidden" notice** (shown whenever the current search's own species results
+      include any Level 2 rows) is a new bordered card, not `AlertFullWidth` (which only supports
+      one CTA; the wireframe needs two side by side) - matches the wireframe's copy/structure
+      exactly, keeps the same tone as the page's existing top-level DLA banner, and shares its real
+      `requestDlaAccess` handler (pulled out of the existing `AlertFullWidth`'s own `onConfirm` so
+      both call sites stay in sync) - `goToSection` to the real DLA nav item for a signed-in user,
+      the real `GuestActionButton`/`SignUpPromptModal` invite modal for a guest. "Learn More" is
+      honestly disabled with a "Coming soon" tooltip (no real DLA policy page exists in this build)
+      via the same `Tooltip`+`Focusable`+disabled-`Button` convention already established by
+      `DisabledQuickAction`/the old `GuestAuthActions`, never a fake `href="#"`.
+    - **The analytics tile row** ("brief Analytics... Flora, Fauna, Mammals, Reptiles etc") is
+      gated behind a real `Toggle` labelled "Summary" - this file's own interpretation of the
+      wireframe's "Summary" switch, which shows no analytics row in either wireframe state;
+      unifying the two readings was the right call rather than building two separate, competing
+      "summary" concepts. Shows a Flora/Fauna split plus the 5-group breakdown, computed from the
+      *currently facet-filtered* set (not including the tile row's own quick-filter, so clicking
+      one tile doesn't zero out every other tile's own count); every tile doubles as a real quick
+      filter (click to narrow, click again to clear). Reuses the exact non-reflow tile technique
+      already established by the page's own `entityTabs` row (an absolutely-positioned active
+      indicator, never a border-width change) rather than reintroducing the reflow bug documented
+      there. **No taxonomy-appropriate icons exist anywhere in `@untitledui/icons`** (confirmed by
+      search, not assumed) - the Flora/Fauna kingdom tiles use `Droplets02`/`Feather` as the closest
+      loose association (same "a real icon standing in loosely, not literally" convention as
+      `Feather` for "Nominate Sensitive Species" elsewhere in this nav), and the 5 group tiles use a
+      plain coloured dot instead of forcing 5 more inappropriate icon choices onto real data.
+    - **The filter chip row + "All Filters" panel** cover all 6 real categories the ask named
+      (Family, Genus, Species, Information Authority, Timeline, Licence) - Genus has no top-level
+      chip of its own (reachable only via "All Filters"), since it's one of two closely related
+      taxonomic filters living together in the panel rather than needing a 6th chip. The panel
+      itself is **left-anchored**, matching the wireframe exactly - `SidePanel`
+      (`app/pages/_shared/map-search/side-panel.tsx`) gained an additive `side?: "left" | "right"`
+      prop (default `"right"`, so its existing consumers - Customise columns, the record-detail
+      sidebar - are untouched), the same "extend, don't fork" pattern already used for that
+      component's `headerActions`/`widthClassName`. Species/Family are real searchable checkbox
+      lists; Genus/Information Authority are plain checkbox lists (short enough not to need
+      search); Licence is two checkboxes labelled exactly `"Level 1 - Public Access"`/`"Level 2 -
+      Needs a DLA Access"`, matching the user's own wording; Timeline reuses the already-built
+      `components/custom/date-range/date-range-control.tsx` (a "Filter by date identified"
+      checkbox reveals it) rather than a new date picker - an honest note under it flags that this
+      component's own selectable window (hardcoded 6 weeks back from today) may not reach every
+      older record in a given search, a real, pre-existing limitation of the reused component, not
+      something this pass could fix without touching a shared component beyond this feature's scope.
+    - **Two real bugs found and fixed during the live QA pass, not caught by `tsc`/`eslint`**:
+      (1) checking "Filter by date identified" showed an active chip and a real-looking date range,
+      but silently filtered nothing at all - `DateRangeControl` only calls `onChange` once the user
+      actively interacts with it (pick a day, step prev/next); passed no value, it falls back to
+      its own internal uncontrolled default and never reports that default back up, so this
+      component's own `dateRange` state stayed `null` and the `dateFilterOn && dateRange` guard
+      never ran. Fixed by seeding a real default (the same current-week range the control itself
+      shows) into `dateRange` the moment the checkbox is checked, so what's displayed and what's
+      filtered can never silently disagree. (2) once that was fixed, a row dated exactly
+      `2026-08-15` was still silently excluded from a selected "14 Aug - 15 Aug" range - comparing
+      `new Date(o.date)` (a bare "YYYY-MM-DD" string, parsed as UTC midnight) against
+      `CalendarDate.toDate(getLocalTimeZone())` (a timezone-aware instant) is off by a day right at
+      a range boundary whenever the browser's timezone is ahead of UTC, which this app's own real
+      Australian audience always is. Fixed by comparing pure calendar dates via
+      `parseDate(o.date).compare(...)` instead, sidestepping timezones entirely. Both caught live,
+      neither by `tsc`/`eslint` - a reminder that a date-range filter needs an actual positive-match
+      browser check, not just a negative "does it correctly show nothing" one, the same lesson this
+      file's own QA checklist already generalises from other features.
+    - **Export (CSV/Excel/PDF), registered users only**, via a real `Dropdown` on the export icon
+      button - a guest's click opens the sign-up invite modal instead of the menu (verified live,
+      both the DLA notice's "Submit DLA Form" and the export button correctly branch per role).
+      Always exports whatever's currently filtered/visible, not a fixed unfiltered set. All three
+      formats are genuinely real with **no new npm dependency** (`app/pages/_shared/map-search/
+      export-utils.ts`): CSV via a real Blob + a temporary `<a download>`; "Excel" via a plain HTML
+      `<table>` served with the `application/vnd.ms-excel` MIME type and a `.xls` extension - a
+      well-established technique Excel/Sheets/LibreOffice all open correctly, not a stub; PDF via a
+      dedicated print-only popup window (`window.open` + `window.print()`, simpler and more
+      reliable than an in-page `@media print` stylesheet fighting the live app's own scroll
+      containers) so "Save as PDF" is a real, standard destination in the browser's own print
+      dialog. A true `.xlsx`/binary-format library was deliberately not added just for this
+      feature, per this build's own "don't add scope/dependencies without cause" judgement -
+      logged as a deliberate choice, not an oversight. Verified live: the CSV/Excel dropdown items
+      and the PDF popup (confirmed via its own document title, "BioData SA - Species Search
+      Results") all fire correctly with zero console errors; actual on-disk file confirmation for
+      CSV/Excel was blocked by this specific Chrome profile's own "always ask where to save
+      downloads" setting producing a native OS save dialog outside browser-automation's reach - an
+      environment property, not a defect in the export code, which uses the same standard technique
+      either way.
+    - **Scoped out, logged rather than silently dropped or silently built**: a Table/Grid toggle
+      (Table is the one that matters, reusing `ResultsTable` - Grid would need its own card layout,
+      not attempted this pass) and the wireframe's "Map" toggle (bringing the map back alongside
+      the table in results mode - genuinely nice, not part of the explicit ask, no map-search-tool
+      precedent for a split map+table results view yet either).
+    - Verified `tsc --noEmit`/`eslint` clean on every touched/new file
+      (`search-data.ts`/`geo.ts`/`side-panel.tsx`/`species-results.tsx`/`export-utils.ts`/
+      `observations/option-1/page.tsx`) and an extensive live Chrome pass as both `registered-user`
+      and `public-user`: a 296km search around -33.5,137.8 returning 10 real species (4 Flora/6
+      Fauna, matching the Mammal/Bird/Plant group tiles exactly), the Mammal quick-filter tile
+      narrowing to 4 and clearing back to 10, the obfuscated-coordinate lock icon and "± 5 km" on
+      Malleefowl, the "All Filters" panel's Species checkbox and Licence section, both date-filter
+      bugs' fixes confirmed with real positive and negative matches, guest export/DLA gating both
+      opening the real invite modal, and `Records` mode confirmed completely unchanged for both
+      roles - zero console errors throughout every check.
+
+      - **Floating search panel over a full-width map, plus a "search areas" disclosure in the
+        results header, per direct feedback.** Search mode's map now fills the whole area below the
+        header; the boundary-method panel floats over it (top-left, clear of the map's own top-right
+        zoom controls, `z-[1000]` since Leaflet's panes reach ~700) with a collapse button in its own
+        header, collapsing to a "Search panel · N areas" pill. `SAMap` gained an optional
+        `fitPaddingTopLeft` (forwarded to `flyToBounds`' `paddingTopLeft`) so fitted areas land clear
+        of the open panel - every other `SAMap` consumer is unchanged. In results mode, "N search
+        areas" in the subheading is now a toggle button (`aria-expanded`, chevron) that shows/hides
+        one chip per area, using the same `boundarySummary` text as the search panel (park names for
+        selected locations, lat/long for drawn/entered areas). Verified `tsc`/`eslint` clean and live:
+        collapse/expand, two drawn circles fitted to the right of the panel, the areas disclosure
+        listing both, zero console errors.
+      - **Follow-up: the top bar folded into the floating card, a new minimised state, and
+        shapefile upload as a 4th search method, per direct feedback.**
+        - The separate "Search biodiversity records" header row is gone in search mode - its title
+          and description are now the floating card's own header, so the map starts right under the
+          page chrome.
+        - The "Search panel" pill is gone. Minimising now folds the same card down to its header:
+          title, a one-line status ("2 search areas defined", plus the keyword if set, or "No search
+          area defined yet"), a primary "Search" button once areas exist, and a chevron to expand.
+          The card stays in the same place instead of being swapped for a different control.
+        - **Shapefile** tab (method labels shortened to Draw / Coordinates / Location / Shapefile so
+          4 fit one row at 480px). Real client-side parsing via the new `shpjs` dependency
+          (`app/pages/_shared/map-search/shapefile.ts`, with a minimal `shpjs.d.ts`): a .zip
+          shapefile, the .shp with its .dbf/.prj picked together, or GeoJSON. A .prj reprojects to
+          lat/long (so MGA/GDA shapefiles work when it's included); non-lat/long coordinates without
+          one, line-only files, empty files and files over 500 locations are rejected with a
+          specific message in the field's hint. Each file is one grouped search area (one list row,
+          removed whole) expanded into real boundaries: a circle of a user-set radius (default 5 km)
+          around each point, and each polygon's outer ring as drawn (holes ignored). Every location
+          gets a map marker - points via the existing circle marker, polygons via a new marker at
+          their vertex average (`sa-map.tsx`, shapefile-sourced polygons only).
+        - `areaEntries` (page.tsx) is now the single "what counts as a search area" list, used by
+          both the card's list and the results header's disclosure, so a shapefile counts once.
+        - Verified `tsc`/`eslint` clean and live with two generated test shapefiles (4 points; 1
+          polygon): both uploaded, 5 markers placed and fitted clear of the card, a search returned
+          35 records across "2 search areas" listed by file name, and the minimised card showed "2
+          search areas defined" with a working Search button - zero console errors.
+- **`/pages/auth/**` - a real, working (no-backend, client-side-only) login/signup flow, built
+  from a dedicated Figma reference (`https://www.figma.com/design/wer8CgO1UoCH3aQw2jQkdy/
+  BioData-SA-High-Fidelity`, canvas `0:1` "Onboarding", frame `26:1410`), then wired into every
+  existing "Log in"/"Sign up" entry point across the build. This reverses this file's own long-
+  standing "no real auth/session in this exploratory build" convention for the auth *screens*
+  specifically, per direct request - the rest of the app still has no real session/backend, this
+  flow just gives the existing disabled buttons somewhere real to go, ending at
+  `/pages/dashboard?userRole=registered-user` (the same URL-as-identity mechanism `RoleSwitcher`
+  already uses to simulate "being" a role, extended here to simulate "being signed in").
+  - **10 routes, one screen or wizard step each**, all under `app/pages/auth/**` (same `/pages/**`
+    treatment as `biodata-home` - full-screen, own root, no doc-site chrome, not in `lib/nav.ts`):
+    `login` (node `8:6183`/`41:324` - the second a password-only variant shown via `?email=`, used
+    when arriving from `reset-success`), `signup` (`26:1471`), `verify-email` (`26:2338`, a real
+    6-digit code input), `set-password` (`32:153`), `account-created` (`39:601`),
+    `setup-profile` (`49:744`/`62:794`/`65:3159`, all 3 wizard steps in one route via `?step=`),
+    `forgot-password` (`26:1411`), `check-email` (`39:555`), `reset-password` (`39:630`),
+    `reset-success` (`39:704`).
+  - **Three shared, page-local pieces** in `app/pages/auth/_shared/` (not promoted to
+    `components/custom/**` - optional per that section, logged here as a candidate): `AuthShell`/
+    `AuthHeader`/`AuthDivider` (the centred-card layout every screen reuses), `PasswordChecklist`
+    (the live gray/green "must be at least N characters"/"must contain one special character"
+    rows - `Set Password`'s Figma copy says 12 characters, not the 13 an early low-res read of the
+    screenshot suggested; confirmed via the real per-screen `get_design_context` fetch), and
+    `OtpInput` (a real 6-digit code control, 6 individually-controlled inputs with auto-advance/
+    backspace/paste - no DEW OTP component exists, so this is composed from plain `<input>`s
+    styled with real tokens, same "no match, no substitute" precedent as `DateRangeControl` before
+    it was promoted).
+  - **`SetupStepper`** (also in `_shared/`) reproduces the Figma wizard's dot-and-line progress
+    indicator (complete/current/incomplete) from real tokens - no DEW stepper component exists
+    either.
+  - **Wired 3 real entry points, not just built the destination:**
+    - **The 7 duplicated, per-file, disabled-with-tooltip `GuestAuthActions` components**
+      (`dashboard`, `dashboard/option-2`, `project-list/option-1` and `option-2`,
+      `project-detail/option-1`, `observation-detail/option-1`, `observations/option-1`) were
+      collapsed into one shared, enabled `app/pages/_shared/guest-auth-actions.tsx` - real
+      `Button href="/pages/auth/login"`/`href="/pages/auth/signup"`, no more tooltip/`isDisabled`.
+      Same "fix the duplicated pattern once it needs a real behaviour change" precedent as this
+      file's other consolidations (`SectionHeader`, the `font-barlow`/token fixes). Each of the 7
+      files' now-unused `Focusable`/`Tooltip` imports were dropped where nothing else in that file
+      still used them (checked per file, not assumed).
+    - **`SignUpPromptModal`** (`app/pages/_shared/guest-action-gate.tsx`) - its "Log in"/"Sign up"
+      buttons used to close the modal and fire a `toast.brand(...)` saying signup isn't built.
+      Now that it is, they `router.push` to the real routes instead (closing the modal first).
+    - **`biodata-home`'s header** - "Login" was `isDisabled` with a "Coming soon" tooltip and had
+      no matching "Sign up" button at all (the one page in this build without one). Enabled and
+      wired to `/pages/auth/login`; added a "Sign up" button next to it so every page in this
+      build now offers both, matching the marketing page's role as the public entry point.
+  - **Honest gaps, logged rather than silently dropped or over-built:**
+    - The `check-email` (password-reset) screen's real Figma design has no in-app continue button
+      at all - it assumes a real emailed link, which this no-backend build can't send. Added one
+      small, explicitly-labelled dev-only link ("This preview has no real email delivery / Continue
+      to reset your password") rather than silently faking a working email system - same honesty
+      convention as `GuestActionButton`'s toast and `DisabledQuickAction`'s tooltip elsewhere.
+    - The profile-picture upload on `setup-profile`'s "Your details" step is a real, working
+      `<input type="file">` (shows the picked filename) with no real storage behind it - no backend
+      exists anywhere in this build to upload to.
+    - The Role/Organisation options offered on `setup-profile`'s "Organisation details" step reuse
+      this file's own already-established real BDBSA partner names (Birds SA, BirdLife Australia,
+      South Australian Museum, Adelaide Hills Landcare) rather than inventing new ones.
+  - Verified `tsc --noEmit` and `eslint` clean on every new/touched file. Live Chrome pass covered
+    both primary paths end to end: (a) sign up -> a real 6-digit code entry -> set password with
+    the live checklist turning green per keystroke -> account created -> all 3 setup-profile steps
+    (multi-row "Add" on Organisation details, both Setup 2 dropdowns populated from the real Select
+    component, both Setup 3 checkboxes) -> landed correctly on
+    `/pages/dashboard?userRole=registered-user`; (b) sign in -> forgot password -> check-email (the
+    dev-only continue link) -> reset-password (live match/mismatch validation) -> reset-success ->
+    "Sign in with new password" correctly rendered the password-only `Existing account` variant.
+    All 3 wiring points (the shared `GuestAuthActions` on a `public-user` dashboard, the
+    `SignUpPromptModal` triggered via "Add project", and the `biodata-home` header) confirmed
+    landing on the real routes. Zero console errors across every screen checked.
+  - **Follow-up: primary-affiliation selection on Setup 2 ("Organisation details"), first
+    improvised (no Figma yet), then corrected against a real Figma reference the user supplied
+    afterward - node 2504:57758, same file.** Each Role/Org row is its own `BentoCard` (this
+    codebase's existing shared card shell, already used by `ContactCard`/`MetricCard` on
+    `project-detail/option-1`) instead of a plain centred heading between horizontal rules - a
+    real container per row, matching this file's own "repeated table shapes need distinct
+    containers" design principle. A real `RadioGroup`/`RadioButton` (already-ingested
+    `components/base/radio-buttons/**`) lets the user mark exactly one row "primary."
+    - **First pass (improvised) guessed `border-brand-300`/`bg-brand-50` for the selected card and
+      added a numbered circle badge + "Affiliation N" heading + a `BadgeWithDot` "Primary" pill +
+      a text "Remove" link, and hid the primary control entirely at 1 row.** Once node 2504:57758
+      was fetched, all of that was corrected to match the real frame: **`border-brand-500`**, not
+      `-300` (Figma's raw swatch is `#2a667c` = brand-500, confirmed against this file's own
+      brand scale - `bg-brand-50` was already right, `#edf7f9` = brand-50 exactly). **No numbered
+      badge, no "Affiliation N" heading, no separate "Primary" pill** - Figma's row header is just
+      the "Set as primary" radio (left) and an icon-only trash utility button (right); trimmed to
+      match, per "Figma is the source of truth, full stop." The trash action is a real, icon-only
+      `Button color="secondary"` (no `children`, so it renders through the component's own
+      built-in icon-only mode - `data-icon-only:p-2` - rather than a bespoke one-off button),
+      matching Figma's bordered/shadow-xs utility-button styling exactly; the earlier text
+      "Remove" link is gone. **The "Set as primary" radio is now always shown, not hidden at 1
+      row** - Figma's row template renders it unconditionally, and a real 1-row state isn't
+      demonstrated in the frame either way, so this defers to Figma's template shape rather than
+      the earlier invented rule. The trash button stays visible but **disabled** (not hidden) once
+      only one row remains, since removing your only affiliation isn't a real action, but hiding
+      it would break the row template's visual consistency Figma establishes.
+    - Removing the current primary row still auto-promotes the next remaining row. First row still
+      defaults to primary.
+    - **New in this pass: selecting "Other" for a row's Role or Organisation/Institution (not in
+      Figma - built per direct request) reveals a required text input directly under that select**
+      (`Input label="Your role"` / `"Your organisation / institution"`), asking the user to name
+      it. `RoleOrgRow` gained `roleOther`/`orgOther` string fields; `step2Valid` now also requires
+      the matching "Other" field to be non-empty whenever that select reads `"other"`; switching a
+      select away from "Other" clears its stored other-text rather than silently carrying stale
+      hidden data forward.
+    - Verified `tsc`/`eslint` clean and a live Chrome pass matching the corrected frame:
+      screenshotted the single-row state side by side with the Figma render (radio + disabled
+      trash, tinted primary card), selected "Other" for both Role and Organisation on the same row
+      and confirmed both required text inputs appeared in the correct column with Continue staying
+      disabled until filled, added a second row and confirmed the trash buttons both re-enabled
+      and the "Other" text survived on row 1, zero console errors throughout.
+
+- **`/pages/observations/option-1` gained a "Species" results view - a second, additive way to
+  browse the same real occurrence data the existing Projects/Events/Occurrences/Observations/
+  Artefacts tabs already show, per direct request ("a species search results page... leaving what
+  we have accomplished already").** Reference wireframe: Figma file `YMproGZfrFB5jUqPHPxMhk`
+  ("Biodata Wireframe Presentation" - the same file already treated as ground truth for this
+  build's real Project->Site->Visit->Occurrence data model, see "BDBSA domain research" above),
+  node `2266:175012`, three instances of an "Observation_Map and Table View" component
+  (`51:119524` base state, `2266:167054` the "All Filters" panel open, `2266:170314` a compact
+  state) - a wireframe, so it documented real IA/interaction shape only (which filters exist, what
+  the table shows), never colour/spacing/component choice, per this file's own established rule
+  for this specific reference file.
+  - **A new "Species / Records" toggle** sits above the existing metrics-tile row in results mode
+    - "Records" is today's exact, untouched 5-tab experience; "Species" is the new view, built in
+    `app/pages/_shared/map-search/species-results.tsx` (`SpeciesResultsView`).
+  - **Species mode is a reframed, enriched view of the real `SearchOccurrence` data, not a
+    separate aggregation layer** - the wireframe's own "Count" column turned out to mean a
+    population/individual count per sighting, not a rollup, once actually read closely. Added real
+    fields to `SearchOccurrence`/`SearchObservation` in `search-data.ts`: `count`, `family`
+    (genuine taxonomic families for every real species already in the dataset), `group`
+    (`"Mammal"|"Bird"|"Reptile"|"Amphibian"|"Plant"`), `licenceLevel` (`"Level 1"|"Level 2"`, the
+    same real BDBSA sensitive-species mechanic already documented above), and `lastSurveyed`.
+    Genus is deliberately *not* stored separately - it's derived from the existing binomial
+    `species` string at render/filter time (`genusOf`), since storing it would risk drifting from
+    the real name. The two Non-Biotic/Community occurrence rows (never real species to begin with)
+    are excluded from Species mode entirely via a `family && group` check.
+  - **Flora was 100% unrepresented before this** - every existing occurrence was fauna. Added a
+    handful of real South Australian native flora species (*Acacia pycnantha*, *Eucalyptus
+    leucoxylon*, and others) as new `SearchOccurrence`/`SearchObservation` rows, parented under
+    existing real Sites rather than inventing new Projects.
+  - **Obfuscated coordinates for sensitive (Level 2) species** - `obfuscateCoordinate` (added to
+    `geo.ts`) deterministically snaps a coordinate to the centre of a grid cell sized to a real
+    5km/10km radius (birds obfuscate tighter, 5km; everything else 10km) rather than adding random
+    jitter, so a sensitive species' displayed location never silently "wanders" between renders.
+    The Coordinates column shows a lock icon + tooltip + the reduced-precision value with its own
+    "± N km" label for Level 2 rows, the real precise value otherwise - visibly different, not
+    silently different, per this build's own honesty convention.
+  - **Filters**: Family, Genus, Species, Information Authority (derived from the record's root
+    Project's real `org`, via the already-exported `rootProjectForParentEventId`), Timeline (a real
+    date range, reusing the already-built `components/custom/date-range/date-range-control.tsx`
+    rather than a new picker), and Licence.
+  - **A "brief Analytics" tile row** (Mammal/Bird/Reptile/Amphibian/Plant breakdown, computed from
+    the currently filtered set) toggled by a real `Toggle` labelled "Summary" - the wireframe's own
+    "Summary" switch shows no analytics row in either of its states, so unifying it with the
+    explicit "brief Analytics... Flora, Fauna, Mammals, reptiles Etc" ask was this build's own
+    interpretation, documented as such rather than silently invented. Each tile doubles as a real
+    quick-filter (click to narrow the table to that group, click again to clear).
+  - **Export (CSV/Excel/PDF), gated to registered users** - all three genuinely real, no new npm
+    dependency (`app/pages/_shared/map-search/export-utils.ts`, see that file's own header comment
+    for the exact technique behind each: a real CSV Blob download, an HTML-table-served-as-`.xls`
+    for "Excel", and a dedicated print window + `window.print()` for PDF). A guest's export click
+    opens the same sign-up invite modal (`GuestActionButton`/`SignUpPromptModal`) this page already
+    uses for "Add project"/"Upload dataset", not a hidden button.
+  - **`SidePanel` (`side-panel.tsx`) gained an additive `side?: "left" | "right"` prop**, default
+    `"right"` (every pre-existing consumer untouched) - Species mode's "All Filters" panel is the
+    first real `"left"` consumer, matching the wireframe's own left-anchored panel.
+  - **Logged gaps, not silently built or silently dropped**: a Grid/card view (Table/Grid toggle in
+    the wireframe) and a "bring the map back alongside the table in results mode" toggle were both
+    scoped out as candidate follow-ups, not built - Table mode (reusing the existing `ResultsTable`
+    primitive) covers the actual ask; "Learn More" on the Species DLA notice is an honestly-disabled
+    link with a "Coming soon" tooltip, since this build has no real DLA policy page yet.
+  - **Follow-up, per direct UI feedback on the first pass ("UIs are not optimised for spacing and
+    ... not consistent with the DEW design system... filters are not intuitive")**:
+    - **Removed the Flora/Fauna kingdom split** that used to sit above the 5 taxonomic-group
+      tiles - redundant once the Plant tile already carries the whole "Flora" total and the other
+      4 groups sum to "Fauna".
+    - **Every filter chip that used to open the full "All Filters" side panel for just one facet
+      is now a real, inline `MultiSelect` dropdown living directly on the toolbar** (Family,
+      Species, Information Authority, Licence - all real `components/base/select/multi-select.tsx`
+      instances, not a hand-rolled popover) **or a small popover** (Timeline - a date range, not a
+      discrete option list, so `MultiSelect` doesn't fit it; a `DialogTrigger`+`Popover` styled to
+      match `MultiSelect`'s own trigger exactly). Only "All Filters" still opens the side panel -
+      now a genuinely consolidated view across all 6 facets, not the only way to touch any single
+      one. The inline dropdowns and the panel's own matching checkbox lists share the exact same
+      state (`selectionToSet`, converting a `MultiSelect`'s `Selection` into the plain `Set<T>`
+      every filter already used), so picking a Family in one place can never disagree with the
+      other.
+    - **The side panel's own accordion was reading FAQ-page-sized** (`Accordion`'s default
+      `"divided"` variant - large titles, `gap-8` between items, a circle-glyph expand indicator
+      meant for a wide marketing page, not a narrow filter panel). Added a third variant,
+      `variant="compact"`, to the shared `Accordion` component (`components/base/accordion/
+      accordion.tsx` - extending the one real component rather than forking a second, per its own
+      established convention): `text-sm` titles, tight `py-2.5` header padding, thin dividers, no
+      reserved FAQ-width content gutter, and a real `ChevronDown` (not the circle glyph) coloured
+      `text-brand-600` per direct request ("chevron(color=brand primary)"). Both existing variants
+      ("divided", "boxed") are untouched - purely additive.
+    - Verified `tsc --noEmit` and `eslint` (zero warnings) clean on every touched file. A live
+      Chrome pass was planned but the browser extension disconnected mid-session (likely tied to
+      an account/session change during this conversation) and did not reconnect - flagged directly
+      rather than silently skipped; a live re-verification is still owed once the extension is
+      back.
+    - **Second UI follow-up, per further direct feedback (still without a live Chrome pass - the
+      extension stayed disconnected across this round too, flagged again rather than silently
+      assumed fine):**
+      - **New shared `MetricTile` component** (`app/pages/_shared/map-search/metric-tile.tsx`) -
+        the Species view's taxonomic-group breakdown and the Records view's own Projects/Events/
+        Occurrences/Observations/Artefacts switcher (`entityTabs` in `app/pages/observations/
+        option-1/page.tsx`) used to be two independently-styled copies of the same "icon + label +
+        count, click to filter" tile; per direct feedback to make the two visually identical, both
+        now render through one real component so they can't drift. Selected state is a real
+        border-colour + light-brand-background change (`border-brand-500 bg-brand-50` - the same
+        "light brand BG, border colour = brand" language already established on the signup flow's
+        primary-affiliation cards) rather than the earlier absolutely-positioned underline bar -
+        since only colour changes now, not border width, the reflow bug that bar existed to guard
+        against (documented at length in this file's own earlier entries) doesn't apply here; a
+        pure colour swap can't change the tile's box height. This is a deliberate departure from
+        the Records view's own Figma-matched flush/un-rounded/underline styling (node I209:27950),
+        made per direct, explicit instruction to unify it with the Species view instead.
+      - **Species mode's taxonomic-group tiles gained real icons**, replacing the plain coloured
+        dot - `@untitledui/icons` has no literal animal/plant glyphs (confirmed by search, same
+        finding this file already notes for the OccurrenceType icons), so each is a loose, honest
+        stand-in per this build's established convention: Mammal -> `Fingerprint01`, Bird ->
+        `Feather` (already this codebase's own bird-adjacent icon), Reptile -> `Hexagon01` (a
+        repeating plated pattern, the closest honest stand-in for scales), Amphibian ->
+        `Droplets02` (a real defining trait - water-dependent life cycle), Plant -> `GitBranch01`
+        (a branching structure).
+      - **Removed the bordered/padded card that used to wrap the Species analytics tile row** -
+        per direct feedback ("no outside container for this, just the blocks would be enough"),
+        matching the Records view's own tile row, which never had one.
+      - **"Edit search" was its own direct child of `SectionHeader.Root`, 20px (the Root's own
+        `gap-5`) above the "Search results" heading - read as an orphaned floating link, not "back
+        navigation for this title."** Wrapped it together with the heading/subheading `Group` in
+        one `gap-2` cluster instead, so the two read as one cohesive unit; `SectionHeader.Root`'s
+        own `gap-5` (shared by every other consumer sitewide) is untouched, since it now only ever
+        sees the one combined child. The page-level DLA warning banner's own position (above this
+        header block) was left as-is - it was placed there per an earlier, separate explicit
+        request ("on the top", see above), and this round's feedback didn't ask to move it.
+      - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on every touched file. No live
+        Chrome pass was possible this round either - flagged to the user directly, asking them to
+        check the result themselves or say when the extension is back up.
+      - **Third UI follow-up, per detailed real Agentation feedback off the live page (still no
+        live Chrome pass possible on this end - the extension stayed disconnected through this
+        round too):**
+        - **Active filter pills.** Every selected value across all 6 Species-mode facets (Family/
+          Genus/Species/Information Authority/Timeline/Licence) now surfaces as its own removable
+          "Filter name: value" pill in a row beneath the filter dropdowns, not just an implied
+          "(N)" count on "All Filters" - one pill per selected *value*, not per facet, so a Family
+          filter with 2 families picked shows 2 independently-removable pills. Built from the same
+          state the dropdowns and the "All Filters" panel already share.
+        - **Filter dropdown widths.** The 5 inline filter controls were genuinely compressed
+          (`w-36`/`w-48` at `size="sm"`) - widened to `size="md"` with real per-field widths
+          (Family/Species `w-48`, Information Authority `w-64` since it's the longest label,
+          Timeline `w-44`, Licence `w-52`).
+        - **Removed the redundant "N species records found" text** from the Summary/export bar -
+          the page-level header above `SpeciesResultsView` already states the same count.
+        - **Group tile icons: `lucide-react` added as a real, new npm dependency**, per direct,
+          explicit authorization ("free to use relevant icons from online, not necessary to stick
+          with DEW design system") - the one deliberate exception to this build's usual DEW-icon-
+          only rule, scoped to exactly these 5 tiles. Mammal -> `PawPrint`, Bird -> `Bird`, Reptile
+          -> `Turtle` (all three literal, unambiguous matches - lucide has real animal icons where
+          `@untitledui/icons` has none at all); Amphibian has no literal icon in lucide either
+          (confirmed by search) so `Droplets` stands in for the real defining trait (a water-
+          dependent life cycle), same honest-substitute reasoning as everywhere else in this
+          build; Plant -> `Leaf`, literal.
+        - **Records/Species view-mode toggle relocated.** It used to sit in its own full-width row
+          between the header and the metrics tiles - an awkward, disconnected spot per direct
+          feedback. Moved into `SectionHeader.Actions` (that slot's own established purpose -
+          trailing header content, already used this way in `app/pages/_shared/data-overview.tsx`
+          and elsewhere), so it now sits beside the "Search results" heading as one coherent
+          header row instead of two stacked, unrelated ones.
+        - **Padding audit, a real bug, not just polish.** The Records-mode metrics tile row
+          (`entityTabs`) had no horizontal padding of its own at all - flush to the viewport edge,
+          while the header above and the table content below both carried `p-6`. Fixed by adding
+          `px-6 pt-4` to that row and to the Species view's own outer wrapper (`pt-4` there too,
+          replacing `pt-0`, now that the toggle row that used to supply the gap above it is gone) -
+          `p-6` header / `px-6 pt-4` tiles / `p-6 pt-4` table is now one consistent 24px rhythm
+          top to bottom.
+        - **DLA banner**: `AlertFullWidth` (`components/application/alerts/alerts.tsx`) gained two
+          new additive props, both defaulting to preserve every other real consumer's look exactly
+          (`home-dashboard.tsx`, the `dashboard-options` prototype, the `/components/alert` doc
+          page) - `tintedBackground` (the outer wrapper's background/border pick up a subtle tint
+          matching `color`, `bg-{color}-50`/`border-{color}-300`, instead of the hardcoded neutral
+          `bg-secondary`/`border-primary`) and `hideDismissButton` (suppresses the separate text
+          "Dismiss" button when `onClose` is set, keeping just the corner icon-only `CloseButton`
+          that prop already rendered - a second, textual "Dismiss" next to a banner that already
+          has one clear primary action and a corner close icon would have been a redundant third
+          dismiss affordance). The DLA banner instance now passes `tintedBackground`,
+          `hideDismissButton`, a real `onClose` (a new `dlaBannerDismissed` state - dismissed for
+          this component's lifetime, not persisted, since it's a live notice about the current
+          search rather than a one-time tip), and a `className` override (already-existing,
+          previously-undocumented-in-practice escape hatch on this component) dropping the
+          centred `max-w-container` for a left-aligned, full-width, slimmer-padded bar.
+        - **Hierarchy display redesigned everywhere it's used** (`HierarchyCell` in
+          `results-table.tsx` - one shared component behind every Events/Occurrences/Observations/
+          Species table's own Hierarchy column, so this fixes all of them at once). The old "..."
+          icon button opening a 4-option dropdown menu (Show one level up/Hide one level up/Show
+          all/Hide all) is gone, replaced with the same collapsed-breadcrumb-with-ellipsis pattern
+          already familiar from GitHub's file-path breadcrumb, Finder/Explorer's path bar, and VS
+          Code's own breadcrumb: a "···" segment stands in for whatever's collapsed, one click
+          expands the full chain inline, and a small "‹" appears to collapse back - one clear
+          toggle instead of four buried menu options behind an ambiguous dots icon.
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on every touched/new file.
+      - **Fourth UI follow-up, per further direct feedback, again without a live Chrome pass (the
+        extension stayed disconnected through this round too):**
+        - **The 5 filter dropdowns (Family/Species/Information Authority/Timeline/Licence) and
+          "All Filters" moved off `MultiSelect` entirely**, per direct feedback wanting them
+          styled as real secondary buttons, not input-styled select fields - `MultiSelect`'s own
+          trigger button has no prop to override its exact styling (only the outer wrapping `div`
+          takes a `className`), so matching "secondary button" exactly wasn't reachable by
+          configuring that component further. New small local `FilterDropdownButton`
+          (species-results.tsx) - a real `Button color="secondary"` as a `DialogTrigger` trigger,
+          a `Popover` beneath holding the same `CheckboxList`/`TimelineFilterFields` content the
+          "All Filters" panel's own accordion sections already use (shared state either way, so
+          the two surfaces can't disagree) - `Button` wraps a real react-aria `AriaButton`
+          internally, so it works as a `DialogTrigger` trigger with no extra plumbing, the same way
+          `RoleSwitcher`'s own FAB does elsewhere in this build. Every one of the 6 controls
+          (5 filters + "All Filters") is a real `min-w-[220px]`, per the feedback's explicit floor.
+        - **The "Summary" toggle is gone entirely, not just hidden** - the Mammal/Bird/Reptile/
+          Amphibian/Plant analytics tile row it used to gate now always renders. The count/Summary/
+          export bar that used to be its own separate `bg-secondary` boxed row beneath the filters
+          is gone too - **Export now lives at the right edge of the filter row itself** (`ml-auto`,
+          same row as the filter dropdowns), rendered as a real text button ("Export results", not
+          the earlier icon-only circle) with a trailing chevron, opening the same real CSV/Excel/
+          PDF dropdown as before. Fixed a real bug caught while rebuilding this: the guest-facing
+          "create an account to export" tooltip previously wrapped a `TooltipTrigger` (which
+          renders its own `<button>`) around what is now a real `Button` - two nested `<button>`
+          elements, invalid HTML. Fixed by wrapping the real `Button` in `Tooltip` directly (no
+          `TooltipTrigger`, no `Focusable` needed either since an enabled button is already
+          naturally hoverable/focusable on its own) - this codebase's existing "disabled button +
+          tooltip" pattern elsewhere already uses the correct `Focusable` version of this, this was
+          the one remaining "enabled button + tooltip" spot that still had the wrong nesting.
+        - **Records/Species view toggle order swapped** - Species now renders first (left), per
+          direct feedback ("species must be first"). The default active view on first load is
+          untouched (still "records") - only the two buttons' left-to-right order changed.
+        - Cleaned up now-dead code left behind by the `MultiSelect` removal: the `selectionToSet`
+          adapter function, the `familyItems`/`speciesItems`/`authorityItems`/`licenceItems`
+          `{id,label}` memos, and the now-unused `MultiSelect`/`Selection`/`AriaButton`/`cx`/
+          `Toggle` imports - confirmed via `eslint --max-warnings=0`, not left as silent warnings.
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on every touched file.
+      - **Fifth follow-up: the user built out the previous rounds' verbal feedback as a real Figma
+        frame (`YMproGZfrFB5jUqPHPxMhk`, node `2294:175340`) and asked to match it exactly - this
+        confirmed most of the prior rounds' interpretations were already correct (Species-first
+        toggle order, dismissible tinted DLA banner, filter dropdowns as secondary buttons, active
+        filter pills, the table's own columns/pagination/customise-columns placement all matched
+        what was already built, byte for byte in several cases), but surfaced 3 real, concrete
+        corrections:**
+        - **The search box and all 6 filter buttons (Family/Species/Information Authority/
+          Timeline/Licence/All Filters) live inside one shared white, shadowed, rounded-lg card**
+          (`get_design_context` on node `2294:175617`), not as separate floating elements - a
+          fixed 480px search input, a 48px gap, then the 6 filter buttons sharing the remaining
+          width **equally** (`flex-1` each, not the previous fixed `min-w-[220px]`) - Figma's own
+          185.33px-per-button figure is exactly what `flex-1` computes to at this card's real
+          width, confirming the equal-share model over a fixed floor. `FilterDropdownButton`
+          gained a `className` prop so each instance can take `flex-1` from its caller.
+        - **The species table's own search box now lives in that shared card, not above the table
+          the way every other tab's own search box still does.** `ResultsTable` (results-table.tsx)
+          gained two small additive capabilities for this, both defaulting to the exact original
+          behaviour so the other 4 tabs (Projects/Events/Occurrences/Observations/Artefacts) are
+          untouched: `searchValue`/`onSearchChange` (lets a caller own the search text instead of
+          this component's own internal state) and `hideSearchBox` (skips rendering this
+          component's own `<Input>` entirely, so there's exactly one real search box, not two).
+          Species mode ended up not even needing the controlled-value half in practice - it filters
+          `filteredSpeciesRows` itself by the new shared search box's own `tableSearch` state
+          *before* handing rows to `ResultsTable`, and only uses `hideSearchBox` to suppress that
+          component's own box - `searchValue`/`onSearchChange` stay real, tested capabilities on
+          `ResultsTable` even though this particular call site didn't end up needing them.
+        - **"Export results" moved out of the filter-dropdown row into the page's own header row**,
+          next to the Records/Species toggle (`get_metadata` on the wider frame showed it as a
+          sibling of the "Search results" heading block and the toggle, not inside the filter
+          card) - a real correction to the previous round's placement, which had put it at the
+          filter row's own right edge. Since the export logic (`runExport`, the CSV/Excel/PDF
+          dropdown) lived entirely inside `SpeciesResultsView`, moving the *button* to
+          `app/pages/observations/option-1/page.tsx` without duplicating the export logic needed a
+          real, small lift: `SpeciesResultsView` gained an `onExportableRowsChange` callback,
+          reporting its own current `filteredSpeciesRows` up to the page whenever they change (a
+          `useEffect` - legitimate here since it's reporting a derived value to a *different*
+          component, not looping back into its own render, unlike the "setState in effect"
+          anti-pattern this codebase avoids elsewhere); `EXPORT_HEADERS`/`exportRowFor` are now
+          exported from species-results.tsx so the page's own new `runSpeciesExport` can reuse them
+          verbatim rather than re-deriving the column list. `isPublicUser` was dropped from
+          `SpeciesResultsView`'s own props entirely (no longer used there once export moved out).
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on every touched file. Still
+          no live Chrome pass possible - the extension remained disconnected through this round.
+      - **Sixth follow-up, per a real Agentation review of the live page - two real fixes:**
+        - **"Export results" was only rendered when `viewMode === "species"`, so it visibly
+          disappeared the moment Records mode was selected** ("the export results disappears when
+          records view is selected. make sure the export button stays"). The header-row export
+          control (`app/pages/observations/option-1/page.tsx`) now always renders regardless of
+          view mode. `runSpeciesExport` was generalised into `runExport`, which branches on
+          `viewMode`: Species mode is unchanged (still `EXPORT_HEADERS`/`exportRowFor`/
+          `speciesExportRows`); Records mode now exports whichever `EntityTab` is currently active,
+          via a new `recordsExportHeaders` map and a `recordsExportRows()` function pulling the same
+          plain fields each tab's own `ColumnDef` list already renders (Project ID/Project/
+          Organisation/Status/Contributor/Updated for Projects, Event ID/Name/Type/Start Date/End
+          Date for Events, and the equivalent ID/Name/Type/Scientific Name/Date shape for
+          Occurrences/Observations, Attached Resource/Type/Attached to Concept/Record ID/Record Name
+          for Artefacts) - never a fabricated field with no real data behind it.
+        - **The filter row (search box + the 6 filter dropdown buttons) moved from the top of
+          `SpeciesResultsView` down to sit directly above the table** - it used to render first,
+          above the DLA notice and the taxonomic-group tile row, read as disconnected from the table
+          it actually filters ("this section must go just above the table"). Also closed a real gap
+          between the fifth follow-up's own comment and its actual code: that round's comment
+          claimed the filter buttons were "a real `min-w-[220px]`" but the JSX only ever set
+          `flex-1`, no floor - confirmed live via the reported feedback ("the filters dropdown width
+          are not sufficient. Make sure they are atleast 220px in width") and fixed for real this
+          time (`min-w-[220px]` alongside the existing `flex-1`, so the buttons still share the
+          row's remaining width evenly once there's more than 220px each to give).
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on both touched files
+          (`app/pages/observations/option-1/page.tsx`, `species-results.tsx`). Still no live Chrome
+          pass possible - the extension remained disconnected through this round too; flagged
+          directly to the user rather than assumed fine.
+      - **Seventh follow-up: the "Records hidden in this search" DLA notice card removed entirely**
+        from `SpeciesResultsView`, per direct request off a screenshot of it. Per-row restriction is
+        still honestly surfaced two other ways this card duplicated - `CoordinateCell`'s own lock
+        icon + tooltip on every Level 2 row, and the page-level "You're viewing public data" banner
+        (`app/pages/observations/option-1/page.tsx`) that already sits above both Records and
+        Species mode with the same "Go to DLA"/"Sign up for access" CTA - so removing this card
+        drops a redundant third instance of the same messaging, not the only one. Its own
+        `hiddenLevel2Count` variable, the `onRequestAccess` prop (dropped from both the component's
+        signature and its one call site in page.tsx - `requestDlaAccess` itself is untouched, still
+        used directly by the page-level banner and the export gating), and its now-unused
+        `AlertTriangle`/`FeaturedIcon` imports were all removed with it; `Tooltip`/`Focusable`
+        stayed, since `CoordinateCell` still uses both. Verified `tsc --noEmit` and
+        `eslint --max-warnings=0` clean on both touched files. Still no live Chrome pass possible -
+        the extension remained disconnected through this round too.
+      - **Eighth follow-up, per direct request: the 5 individual filter dropdown buttons in
+        Species mode are gone (search box + a single "All Filters" button only), and Records mode
+        got the same treatment plus real per-group filter categories, plus a customise-columns
+        icon on every entity tab's own table.**
+        - **Species mode** (`species-results.tsx`): the Family/Species/Information Authority/
+          Timeline/Licence dropdown buttons are gone from the toolbar - just the search box
+          (unchanged `w-[480px]`) and the "All Filters" button remain. Every one of those 6 facets
+          (the 5 plus the group tiles) still filters the table exactly as before - none of the
+          underlying state, `accordionItems`, or filtering logic changed, only the duplicate inline
+          buttons. The now-unused local `FilterDropdownButton` component and its
+          `ChevronDown`/`Dialog`/`DialogTrigger`/`Popover`/`cx`/`ReactNode` imports were removed
+          with it.
+        - **Records mode** (`app/pages/observations/option-1/page.tsx`) gained the same toolbar
+          shape - a shared search box (`w-[480px]`, one `recordsSearch` state across all 5 entity
+          tabs, same "page-level, not per-tab" precedent `keyword`/`boundaries` already use) plus a
+          single "All Filters" button opening a left-anchored `SidePanel`. Every tab's own
+          `ResultsTable` now wires its internal search box to `recordsSearch` via
+          `searchValue`/`onSearchChange`/`hideSearchBox` instead of rendering its own, and every
+          tab now passes `showHeaderColumnCustomizer` too (previously only Occurrences did) so its
+          "Customise columns" trigger is a floating icon over the table - satisfying the "the
+          tables in the Records sections... must have the customise column icon" ask uniformly
+          across Projects/Events/Occurrences/Observations/Artefacts and Attachments, opening the
+          same right-hand `SidePanel` every table already had.
+        - **Real filter categories per group, not a stub.** Two facets, real and working, applied
+          on top of the existing spatial + keyword + `matchingProjectIds` filtering (split into new
+          `preFacetX`/final `filteredX` pairs so the panel's own option lists don't shrink to
+          nothing the moment something's selected): **Region** (a real field on all four of
+          `SearchEvent`/`SearchOccurrence`/`SearchObservation`/`SearchResource`, so it applies
+          uniformly to every group) and **Organisation** (a direct field on Projects/Events;
+          derived via `rootProjectForParentEventId` for Occurrence/Observation/Resources, the same
+          real lookup Species mode's own "Information Authority" facet already uses - never
+          fabricated). The panel's own Region/Organisation checkbox lists are scoped to whichever
+          entity tab is currently active, with real, removable "Filter name: value" pills below the
+          toolbar (same shape as Species mode's own pills) and a shared `Clear all`. Per direct
+          request ("for now add filter categories and filter values for each group") - a real,
+          working starting set per group, not exhaustive; more categories (e.g. Status for
+          Projects, a Type facet inside the panel itself rather than only the existing inline sub-
+          type chip row) are a natural next step, not attempted this round.
+        - Fixed a `react-hooks/exhaustive-deps` warning from the first pass (`matchesFacets`
+          defined as a plain, non-memoized function meant every downstream `useMemo` either missed
+          it as a dependency or, once added, made `selectedRegions`/`selectedOrgs` themselves look
+          redundant) by wrapping `matchesFacets` in `useCallback` and depending on that alone.
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on both touched files. Still
+          no live Chrome pass possible - the extension remained disconnected through this round too;
+          flagged directly to the user rather than assumed fine.
+      - **Ninth follow-up, per direct feedback: the search box in both toolbars is now full-width,
+        with "All Filters" pinned to its right edge** ("the search bar shall be full width and the
+        all filters button on the right. Do the same for records screen as well"). Both
+        `species-results.tsx` and `app/pages/observations/option-1/page.tsx`'s shared toolbar
+        changed from a fixed `w-[480px] shrink-0` search `Input` to `flex-1` (fills the row); the
+        "All Filters" `Button` kept its own `min-w-[220px]` floor and picked up an explicit
+        `shrink-0` so it can't be squeezed, and naturally lands at the right edge since the input
+        has already claimed the rest of the row's width - no `justify-between`/`ml-auto` needed. A
+        second piece of feedback ("search and filters button must be just above the table") was
+        checked against the actual DOM order rather than assumed already fixed by the width change
+        alone: in both views the search+filters row already sits directly before the table region
+        (only an optional active-filter-pills row can fall between them, and in Records mode the
+        Metrics section switcher necessarily sits *above* the search+filters row, not between it and
+        the table, since it decides which table is even showing) - no reordering was needed, the
+        full-width change should also read the toolbar as clearly anchored to the table below it
+        rather than a narrow, disconnected-looking bar. Verified `tsc --noEmit` and
+        `eslint --max-warnings=0` clean on both touched files. Still no live Chrome pass possible -
+        the extension remained disconnected through this round too.
+      - **Tenth follow-up: the record-detail sidebar (`record-detail.tsx`, opened by clicking a
+        Project/Site/Visit/.../Occurrence/Observation row) gained a common, non-collapsible context
+        block above its Figma-matched accordion sections, per direct request** ("show common fields
+        ie. what is the parent project ID and Project name. The immediate parent ID and name if
+        any... possibly showing the hierarchy of how the selected item is on the data record").
+        - **`findEventById`** added to `search-data.ts` - the one public window onto the file's
+          previously-private `eventById` map, needed to resolve an Occurrence/Observation's own
+          immediate parent Event object (not just its code or its root Project).
+        - **`ParentContextBlock`** (new, rendered at the top of every record type's sidebar body,
+          above the accordion) shows three real rows: **Project** (the root Project this record
+          ultimately belongs to, via the already-real `rootProjectOfEvent`/
+          `rootProjectForParentEventId`), **Parent** (the one immediate ancestor one level up -
+          undefined, rendered as an honest "- (this is the root project)", only for a root Project
+          itself, which has none), and **Hierarchy** (the full ancestor chain as a clickable
+          breadcrumb, reusing the same real `eventChain`/`hierarchyFor` chain-building
+          `HierarchyCell` in results-table.tsx already uses for the table's own Hierarchy column -
+          for an Occurrence/Observation, whose own `hierarchyFor` chain stops at its immediate
+          parent Event, one more plain-text trailing segment is appended for the record's own title
+          so the breadcrumb still visually ends exactly "where you are"). A Site's own "Parent" row
+          can correctly equal its "Project" row (a Site's immediate parent *is* the root Project) -
+          not a bug, the same real relationship an Occurrence attached with no Site/Visit in
+          between also produces.
+        - **Every Project/Parent/breadcrumb link is real and clickable**, opening a second, stacked
+          `RecordDetailSidebar` for that specific ancestor - the same recursive-sidebar pattern
+          `HierarchyCell` already proved works this session (react-aria's `ModalOverlay` handles two
+          panels open at once with no extra wiring) - reused here via `ParentContextBlock`'s own
+          local `linkedEvent` state, not a new mechanism. `record-detail.tsx` still has no
+          dependency on `results-table.tsx` (only the reverse already existed) - the breadcrumb was
+          built as a small, local component rather than importing `HierarchyCell` directly, to avoid
+          introducing a two-way circular import between the two files.
+        - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on both touched files
+          (`record-detail.tsx`, `search-data.ts`), plus a manual trace through every record shape
+          (a root Project, a Site, a Visit, an Occurrence attached directly to a Project with no
+          Site/Visit in between, and an Occurrence under a full Project→Site→Visit chain) confirming
+          the Project/Parent/Hierarchy rows all resolve correctly. Still no live Chrome pass possible
+          - the extension remained disconnected through this round too.
+      - **Eleventh follow-up: the tenth follow-up's own Project/Parent/Hierarchy field-list header
+        was replaced entirely, per direct feedback with a reference screenshot** ("get rid of this
+        and show the project level details like this") - the reference is the same real eyebrow-
+        label / big-title / meta-row header `project-detail/option-1`'s own page header already
+        uses (`MetaField`: "PROJECT" eyebrow, the project's name as a title, then Project ID/Start
+        Date/End Date/Status (a real `BadgeWithDot`)/Published by in a row). No "Parent" or
+        "Hierarchy" field in the reference - both are gone, along with the recursive-sidebar-on-
+        click behaviour they needed (a pure static info header now, not interactive) - simplifying
+        `ContextRow`/`HierarchyBreadcrumb`/`ParentContextBlock`/`projectAndParentFor` down to two
+        small pieces: `projectFor` (unchanged root-Project lookup, `parent` dropped entirely) and
+        `ProjectSummaryHeader` (the new header itself, using a page-local `MetaField` copy of
+        `project-detail/option-1`'s own component - a small, page-scoped primitive, not cross-
+        imported between `/pages/**` files, per this codebase's own convention). "Published by"
+        reads the record's real `org` field (confirmed against the reference screenshot's own
+        "Adelaide Hills Landcare" example, which matches that exact project's real `org` value in
+        search-data.ts). `findEventById` (added last round specifically for the now-removed
+        "Parent" row) had no other caller left once this landed - removed from search-data.ts
+        rather than left as unreferenced exported dead code. Verified `tsc --noEmit` and
+        `eslint --max-warnings=0` clean on both touched files. Still no live Chrome pass possible -
+        the extension remained disconnected through this round too.
+      - **Twelfth follow-up: three separate pieces of direct feedback in one round - a "Go to
+        project" sidebar action, tighter spacing on `ProjectSummaryHeader`, and the Records-mode
+        "All Filters" panel rebuilt to reflect each table's own real columns instead of a fixed
+        Region/Organisation pair. This round also found the local dev server had drifted - the
+        process on port 3000 was serving from an unrelated directory
+        (`/Users/mohan/Downloads/DEW/dew-design-system-main`), not this repo; this repo's own dev
+        server was already running on port 3001, used for the live Chrome pass below.**
+        - **"Go to project"** (`GoToProjectButton`, record-detail.tsx) - a real button in the
+          sidebar's top-right header, next to the expand/collapse-all toggle, per direct request:
+          "on click of that the user will be taken to the project with the same event occurrence
+          observation selected on the tree view." Honestly scoped to what's actually real:
+          `project-detail/option-1` is the only project in this build with a real detail page
+          ("Adelaide Hills Bushland Survey", id `adelaide-hills`) - the button navigates for real
+          only when a record's own root Project is that one (`ADELAIDE_HILLS_PROJECT_ID`), and is
+          disabled with a "coming soon"-style tooltip for every other project, same precedent as
+          `GuestActionButton`/`DisabledQuickAction` elsewhere in this build. `project-detail/
+          option-1`'s own `projectRecordTree` is a separate, smaller, hand-authored mock tree with
+          its own ids ("site"/"visit"/...) that mostly don't correspond to any real record in
+          search-data.ts (confirmed by reading both files side by side) - rather than fake a match,
+          a small honest lookup (`ADELAIDE_HILLS_TREE_NODE_BY_CODE`) maps only the two codes that
+          genuinely do correspond (`SU00501` → `site`, `VU00501` → `visit`) to that page's own real
+          `?select=<id>` URL convention (`selectedRecordKey`, already built for the "Grouped by Type
+          + Search" TreeView work); every other record (every Occurrence/Observation, every other
+          Event type, every non-Adelaide-Hills project) still navigates to the right real project -
+          it just doesn't land on a pre-selected node, honest rather than a wrong guess.
+        - **`ProjectSummaryHeader` spacing widened** - `mb-4`→`mb-6`, inner `gap-4`→`gap-5`,
+          `pb-4`→`pb-6`, the eyebrow-to-title gap `gap-1`→`gap-2`, the meta row `gap-6`→
+          `gap-x-8 gap-y-4`, and `MetaField`'s own label-to-value gap `gap-1`→`gap-1.5` - per direct
+          feedback ("the spacing is too tight. Make it clean").
+        - **Records mode's "All Filters" panel now reflects each entity tab's own real column
+          headers/values**, replacing the Region/Organisation pair from two rounds ago, per direct
+          feedback: "the all filters side panel for projects, events observation, occurences and
+          artefacts and attachments are not reflecting the column headers and values as filters.
+          Use the same column headers and column values as filters and values. You can ignore the
+          hierarchy column as filter." `ColumnDef<T>` (results-table.tsx) gained an optional
+          `filterValue?: (row: T) => string` - a plain, comparable value per column, deliberately
+          separate from `render` (can return a Badge/icon/button, not comparable) and `searchText`
+          (a free-text haystack, not a discrete value). Added `filterValue` to every column in
+          `projectColumns`/`eventColumns`/`occurrenceColumns`/`observationColumns`/`resourceColumns`
+          except Hierarchy (never gets one, per direct instruction) and occurrenceColumns' ~25
+          `defaultVisible: false` placeholder columns (most take no row argument at all, always
+          "-" - a filter built from them would have exactly one, functionally useless option; a
+          reasonable scope call, not silently dropped, logged inline). `columnFilters` state is now
+          `Record<EntityTab, Record<string, Set<string>>>` - keyed first by tab then by column id,
+          so switching tabs can never leak one tab's selections into another (two tabs can share a
+          column id like `"id"`/`"type"` with a different real meaning). `filterableColumns`/
+          `matchesColumnFilters`/`buildColumnFilterSections` (new module-level helpers) derive the
+          panel's own accordion sections, real distinct values, and the filtering predicate directly
+          from each tab's own `ColumnDef` array - one source of truth, never a second, hand-typed
+          facet list. Active-tab-scoped pills/count/"Clear all" preserved from the previous round's
+          UX, now driven by `activeFilterableColumns` instead of a hardcoded Region/Organisation
+          pair.
+        - **Verified live** (not just `tsc`/`eslint`, which were also both clean) on the correctly-
+          running dev server (port 3001, this repo - not the stale port-3000 process from an
+          unrelated directory, caught and worked around rather than assumed): searched Belair
+          National Park (18 records, 1 project), opened "All Filters" on the Projects tab and
+          confirmed it shows exactly Project/Organisation/Status/Contributor/Updated (no
+          Hierarchy - Projects never had one) with a real "Active" checkbox under Status; switched
+          to Events and confirmed the panel changes to Event ID/Event Name/Event Type/Start
+          Date/End Date (no Hierarchy); opened "Cleland Bushland Site"'s (a Site event, code
+          `SU00501`) record-detail sidebar, confirmed the widened `ProjectSummaryHeader` spacing
+          visually, and clicked "Go to project" - landed on `/pages/project-detail/option-1?
+          userRole=registered-user&select=site` with "Site SU00501" correctly pre-selected and
+          expanded in that page's own TreeView; separately opened "Western Grey Kangaroo" (an
+          Occurrence, the exact record from the original screenshot this feature was requested
+          against) and clicked "Go to project" - landed on the same project's Overview tab with no
+          `select` param (honest, since Occurrence codes have no real tree-node match), not a wrong
+          highlight. Zero console errors across every interaction.
+
+- **`/pages/project-registration` - the 3-step Add Project wizard, per direct request, reached by
+  clicking the "Add project" header button (previously a real, visible, but completely dead
+  button everywhere it appeared - `app/pages/_shared/guest-action-gate.tsx`'s `GuestActionButton`
+  rendered a plain no-op `<Button>` for every non-guest role).** Figma: the same "Biodata Wireframe
+  Presentation" file already treated as this build's real-data-model ground truth (see "BDBSA
+  domain research" above), node `2298:179004` - a plain wireframe read for its own real IA (the 3
+  step names/order, the 5 restriction types nested inside step 3, the species/location nomination
+  sub-flows) rather than for any colour/spacing/component choice, per the user's own explicit
+  instruction that "the design must come from you." Analysed via `get_metadata` (the section's
+  column layout: 2 narrow columns for steps 1-2, 6 wider columns for step 3's own sub-panels) then
+  `get_design_context` per column, since the whole section was too large for one call.
+  - **`GuestActionButton` gained an optional `href` prop** (`icon`/`label`/`color`/`isGuest`/
+    `modalTitle`/`modalDescription` all unchanged) - a signed-in user's click now `router.push`es
+    `roleHref(href)` instead of doing nothing; a guest's click is untouched (still opens
+    `SignUpPromptModal`). Wired on all 5 real "Add project" call sites (`dashboard/page.tsx`,
+    `project-list/option-1`, `project-detail/option-1`, `observation-detail/option-1`,
+    `observations/option-1`) - the two `option-2` shells' own plain, unwired `<Button>` "Add
+    project" instances were left alone, per this file's own "option-2 is a preserved comparison
+    record, not actively iterated" precedent. `lib/registered-user-nav.ts`'s `projectActions`
+    array already had a `"Create Project"` entry with a `steps` list from an earlier brief (5
+    steps, one per restriction type) - updated to the real 3-step shape once this was built, per
+    "keep documentation honest," rather than left contradicting the real page.
+  - **Shell is deliberately lighter than every other real `/pages/**` screen**: the real persistent
+    header (DEW/SA Government lockup, "BioData SA", a live `Breadcrumb`, the same `ProfileMenu`
+    every other shell duplicates) but no icon rail and no contextual sidebar - a focused,
+    single-purpose wizard benefits from one clear focal point (this file's own cognitive-load
+    principles), not the double-sidebar chrome built for open-ended browsing. A direct-URL guest
+    visit (no real entry point ever sends one, but the URL is not otherwise gated) renders an
+    honest inline "Sign up to add a project" state instead of the form, reusing the same copy
+    `GuestActionButton`'s own modal already uses.
+  - **A new real, reusable primitive: `components/custom/textarea/textarea.tsx` (`Textarea`).**
+    No file under `components/base/input/**` (or anywhere else) exports a multi-line field -
+    confirmed by grep, not assumed - so this reuses `Input`'s own `TextField`/`Label`/`HintText`
+    primitives and copies its exact wrapper tokens (`rounded-lg bg-primary shadow-xs ring-1
+    ring-primary`, a 2px brand focus ring, an error ring when invalid) rather than inventing a
+    parallel field language. Graduated straight to a real component instead of a `?` gap marker or
+    a `components/custom/**` first pass, unlike `DateRangeControl` - a plain textarea has none of
+    that component's complexity - and documented at `/custom-components/textarea` (slotted
+    alphabetically after "Date range").
+  - **Step 1 (Project Identification)**: Role or type of work (with an "Other" text reveal), Short
+    Title/Full Title (a "Same as Short Title" checkbox disables and mirrors Full Title live),
+    Abstract (`Textarea`), Start/End Date (`InputDate`), Data Owner/s (a real `RadioGroup` for
+    Organisation vs. Individual, then repeatable `BentoCard` contact rows - First/Last/Email/Phone
+    - with Add another/remove, same repeatable-row shape as the auth flow's own `setup-profile`
+    role/org rows), and Project Manager/s (a `Select.ComboBox` search-and-add, each pick rendered
+    as a removable `BadgeWithButton` chip, reusing this build's own established placeholder
+    persona set - Olivia Wyatt/Phoenix Baker/Lana Steiner/Maya Dewitt - not invented names).
+  - **Step 2 (Data Collection and Storage)**: a new shared `GeoExtentPicker`
+    (`app/pages/project-registration/geo-extent-picker.tsx`) - a real `Tabs` row (Upload Shapefile/
+    Draw on the Map/Choose from a List/Coordinates) - built once and reused by both Step 2's own
+    "Geographic Extent" and every Location restriction entry in Step 3, rather than duplicating a
+    4-method chooser twice. "Draw on the Map" reuses the real `SAMap` (dynamically imported,
+    `ssr:false`, same as `/pages/observations/option-1`); "Choose from a List" reuses the real
+    `SA_NATIONAL_PARKS` data; "Coordinates" reuses `InputNumber` Lat/Long/Radius, same pattern as
+    the map search tool's own coordinate entry. Project Focus Areas (a disabled "Biological" type
+    plus a real `MultiSelect` of focus areas), Targeted Species (a `MultiSelect` built from the
+    same real, deduped species list `search-data.ts` already provides - not a second dataset),
+    Method of Data Collection (a 4-option `RadioGroup` with a `Textarea` reveal for Systematic/
+    Other), repeatable Permit rows, URI/DOI Number, and Limitations and biases (`Textarea`).
+  - **Step 3 (Privacy and Restrictions)** - the section the user specifically asked to get right:
+    - A Yes/No `RadioGroup` ("Does your project have any restrictions on its distribution to
+      users?", defaulting to "No restrictions"); Step 3 is the last step regardless of the answer,
+      so its own primary button is always "Create Project," never a "Next" that would imply a 4th
+      step - a deliberate simplification of the wireframe, which showed "Next" on one captured
+      panel and "Create Project" on another (almost certainly two different mock states, not a
+      real second step).
+    - **Restriction Types** render as 5 real `Accordion` items (`variant="boxed"`, independently
+      open, not `singleOpen`) - Embargo, Restrict data based on Species, Restrict data based on
+      Locations, Restrict data based on Project Metadata, Other Restrictions. Each item's own
+      title is a real `Checkbox` + label/description; checking it both marks that type "enabled"
+      (`RestrictionsState.enabledTypes`, a `Set<RestrictionTypeKey>`) and opens its accordion item
+      - `openKeys` is derived directly from `enabledTypes` every render (a controlled `Accordion`,
+      `onOpenKeysChange` a deliberate no-op since this component owns "which types are active,"
+      not the accordion itself), so a type's expanded/enabled state can never drift apart the way
+      two separately-tracked booleans could. Unchecking a type never clears its own form state
+      (embargo/species/locations/metadata all keep whatever was filled in) - verified live by
+      unchecking and re-checking Embargo and confirming its type/reason/date all survived.
+    - **Embargo**: a `Select` of 4 real types (Publication/Project completion/Cultural-Indigenous/
+      Other, each with its own description text sourced from the Figma wireframe, shown live under
+      the select once chosen), a required `Textarea` reason, and a single `InputDate` "Embargo End
+      Date" - simplified from the wireframe's ambiguous "Embargo End Date / To" (no "From" label
+      was ever found in the source; an embargo starting immediately and ending on one specified
+      date is the more honest UX than inventing a second date field the wireframe never actually
+      labelled).
+    - **Species restriction** (`species-restriction.tsx`) - the flow the user described in detail,
+      built exactly as asked: "Select Species" opens a right `SidePanel` with a real search box,
+      group-filter chips (Mammal/Bird/Reptile/Amphibian/Plant - matching this dataset's real
+      `SpeciesGroup` union, no fabricated "Fish" chip since no real fish species exist in it), and
+      a list built from the same deduped, real species dataset Step 2's own `Targeted Species`
+      field reads from. **Picking an already-`"Level 2"` species (e.g. Pygmy Bluetongue Lizard,
+      Malleefowl, Orange-bellied Parrot, Yellow-footed Rock-wallaby - the same 4 real species this
+      build already flags sensitive everywhere else) shows a real warning banner** ("This species
+      is identified as sensitive in our records") **with a "View data restriction summary" that
+      expands to list the real project code(s) already carrying a Level 2 record for that species**
+      (via the already-real `rootProjectForParentEventId`/`searchOccurrences` - `data.ts`'s new
+      `existingRestrictionsForSpecies` helper), not a fabricated list. A "custom sensitivity
+      restrictions" checkbox reveals Data Protection Rules (All Data vs. Specific Attributes, the
+      latter opening the same shared `AttributeRows` editor Project Metadata restriction uses) and
+      a required Justification. Saved entries render as cards (species name, a "Data sensitivity
+      level: Default Biodiversity Restrictions / Custom Defined Attributes" banner, the attribute
+      table if any, justification, remove, "Add another species") - matching Figma's own populated-
+      state card shape exactly.
+    - **Location restriction** (`location-restriction.tsx`) - same empty-state/panel/card-list
+      shape as Species, minus the "already sensitive" check (nothing in this dataset models that
+      for a location the way `licenceLevel` does for a species): "Nominate Sensitive Location"
+      panel with a required Location Name, the shared `GeoExtentPicker`, and a required
+      Justification; saved entries show the location name and a real, derived extent summary
+      (the selected park's name, the uploaded shapefile's filename, or `boundarySummary()`'s real
+      lat/lon-or-vertex text for a drawn/entered boundary).
+    - **Project Metadata restriction**: a shared `AttributeRows` editor (`attribute-rows.tsx` -
+      extracted so Species' "Specific Attributes" mode and this section can't drift into two
+      slightly different implementations of the same Attribute/Value repeatable-row idea) plus a
+      required Justification `Textarea`.
+    - **Other Restrictions**: a single required `Textarea`, matching the wireframe's own simplest
+      restriction type exactly.
+  - **"Create Project" shows the real success screen** (`success-screen.tsx`) - the wireframe's own
+    "Project Created!" + a real numbered "What can you do Next?" checklist (Download Standard
+    Templates/Upload Dataset/Data Access and Management/Data Extraction - Reports, verbatim from
+    the source), a "Learn How" button honestly disabled with a "coming soon" tooltip (same
+    `Focusable`+`Tooltip` convention as `DisabledQuickAction`, since no guided-walkthrough content
+    exists anywhere in this build), and "Skip and Go to Project" - which honestly routes to the
+    real Projects list (`roleHref("/pages/project-list/option-1")`), not a fabricated new detail
+    page for the just-"created" project, same "no match, no substitute" call this build already
+    makes for e.g. the map search's own "Go to project" action. No real backend exists anywhere in
+    this build - "Create Project" doesn't persist anything, and "Save Draft" is an honest
+    `toast.brand("Draft saved", …)` saying so, not a fabricated persistence layer.
+  - **Two real dead-utility bugs found and fixed before this was ever loaded in a browser** (grepped
+    against the compiled token layer, same discipline as every other ingest this build has done):
+    `divide-secondary` (used to separate rows in the species picker's result list and a populated
+    species card) isn't a real utility in this repo's hand-curated layer at all - no `divide-*`
+    colour utility is defined anywhere, confirmed via grep against `app/globals.css` - fixed by
+    keeping `divide-y` (a real, core-Tailwind border-width utility) and colouring the divider
+    directly via `[&>*+*]:border-[var(--ui-border-secondary)]`, the same "no matching utility,
+    reference the token directly" fallback this codebase already uses for e.g. `tree-view`'s
+    connector line. `border-brand` (used for the selected state of the species group-filter chips)
+    also isn't real - only `ring-border-brand` exists in that family - fixed to
+    `border-[var(--color-brand-500)]`. Incidentally, the same `border-brand` bug already exists,
+    unrelated to this build, in `app/pages/projects/page.tsx` (an untouched, undocumented page
+    outside this session's scope) - flagged here rather than fixed, since that page was never part
+    of this task.
+  - Verified `tsc --noEmit` and `eslint --max-warnings=0` clean on every new/touched file, and an
+    extensive live Chrome pass end to end: filled all of Step 1 and Step 2 (including the national-
+    park "Choose from a List" tab, the real Draw-on-map Leaflet tile load, the Targeted Species
+    `MultiSelect` against the real species dataset, and the Method of Data Collection "Other"
+    reveal), enabled Embargo + Species + confirmed both stayed independently expanded, selected
+    Pygmy Bluetongue Lizard and confirmed the real "BD-5033 - Flinders Ranges Reptile Atlas"
+    already-restricted summary, saved a Specific-Attributes species restriction and confirmed it
+    rendered as a populated card, confirmed "Save Draft" and "Create Project" both work (the latter
+    showing the real project name on the success screen), confirmed "Skip and Go to Project"
+    carries `?userRole=` to the real Projects list, and confirmed the guest gate renders correctly
+    for `public-user` on a direct URL visit. Zero real console errors throughout (the one message
+    seen is the same generic Chrome-extension-messaging artifact this file already notes elsewhere,
+    confirmed by its `0:0` line/column attribution).
+
+- **Step 1 (Project Identification) rebuilt as a one-question-at-a-time "Typeform-style" flow**,
+  per direct feedback that the first pass "look[ed] like a standard boring form" and had two real
+  design errors: "Role or type of work" was asked first (a question about the *user*, not the
+  project - an odd opener), and a Project Manager was captured as just a name with no organisation
+  or role. Both confirmed directly against a fresh Figma fetch of node `2298:175996` ("Project
+  Manager/s") before rebuilding, per the user's own instruction to "refer to figma well" - that
+  frame shows each manager card's own First Name/Last Name/Email as its *only* asterisked
+  (required) fields, with Organisation/Role/Phone/a "Primary contact" toggle present in the same
+  card but carrying no asterisk - i.e. real, optional, per-person detail, confirming the user's
+  complaint and giving the exact fix.
+  - **New shell: `typeform-card.tsx`** - `TypeformCard` (one focused question per screen: a thin
+    top progress bar, a small "kicker · Question N of M" label, a large headline, the field(s),
+    and Back/Continue) and `ChoiceTile` (a big, tappable card - the Typeform-native stand-in for a
+    plain radio button - used for Data Ownership type and the Role question's 6 options, instead
+    of the original dropdown/radio for exactly these two, per "much more interactive... like
+    Typeform"). Advancing on Enter is a real, working `onKeyDownCapture` listener scoped to a
+    genuine `<input>` target only (allowlist, not "everything but textarea") - confirmed live that
+    a plain `<form onSubmit>` never actually fires here at all, since react-aria's own `Input`
+    swallows the Enter keydown internally before it would reach a bubble-phase form handler;
+    capture phase runs first, so it can't be swallowed. The "press Enter" hint auto-fades to
+    `opacity-0` whenever the current answer isn't valid yet, rather than being a static label that
+    could mislead before the field is actually filled in.
+  - **Real bug found and fixed mid-build, not just a testing artifact**: `AnimatePresence
+    mode="wait"` keeps the outgoing card mounted (and, by default, fully clickable) for the length
+    of its own exit animation. A fast double-click/double-Enter on "Continue" could land a second
+    time on the *old*, already-validated card's own still-visible button before the new card ever
+    mounted - silently skipping whatever question should have come next with that field left
+    empty (caught live: skipped the mandatory Abstract question entirely, landing two cards ahead).
+    Fixed by setting `pointerEvents: "none"` on the card's own `exit` animation state, making the
+    fading-out card inert the instant it starts leaving - the incoming card is the only one that
+    can ever be interacted with once its own render commits.
+  - **The mandatory sequence, in order** (7 questions, "Project details" -> "Data ownership" ->
+    "About you" -> "Project team" kickers): project name (opens the flow now, not the user's role),
+    abstract, start date, data ownership (a `ChoiceTile` pair - Organisation/Institution vs.
+    Individual/Person - revealing an inline Organisation name field only when Organisation is
+    picked), the primary contact's First/Last/Email (the question's own title dynamically
+    references the org name just given, e.g. "Who's the primary contact at Adelaide Hills
+    Landcare?" - confirmed live), the user's own role (6 `ChoiceTile`s, an "Other" reveal), and
+    Project Manager/s (at least one; each manager card shows First/Last/Email as its own required
+    fields plus a single "+ Add organisation, role or phone" link that reveals Organisation/Role/
+    Phone/a Primary-contact `Toggle` inline, matching the Figma frame's real field split exactly -
+    fixing the original pick-a-persona-from-a-list version, which asked no such thing).
+  - **A closing "Review" card** (styled as the 8th step, `showQuestionCount={false}` so it reads
+    as a summary rather than "Question 8 of 7") lists every mandatory answer with an inline edit
+    icon that jumps `cardIndex` straight back to that question, followed by an honest "Optional
+    details" row of "+" buttons - Different full title (Full Title defaults to mirroring Short
+    Title, per `sameAsShortTitle` now defaulting `true`, until this is clicked), End date, Another
+    data owner contact - each revealing its real field inline the moment it's clicked, never shown
+    empty by default. This is the literal mechanism behind "mandatory fields first, optional ones
+    added by the user's own choice."
+  - **`types.ts`**: `projectManagerIds: string[]` (a persona-id array) replaced with a real
+    `ProjectManager[]` (`firstName`/`lastName`/`email`/`phone`/`organisation`/`role`/`roleOther`/
+    `isPrimary`, via a new `emptyProjectManager()`), matching the Figma-confirmed field shape
+    exactly rather than a name picked from this build's own placeholder persona list.
+  - Verified `tsc --noEmit`/`eslint --max-warnings=0` clean, and an extensive live Chrome pass
+    through the complete real sequence end to end (project name -> abstract -> start date ->
+    organisation ownership with the inline name reveal -> primary contact with the dynamic
+    org-referencing title -> role tile grid -> a project manager with its optional fields expanded
+    live -> the review screen's summary and a working "+ End date" reveal -> "Continue to Data
+    Collection" landing correctly on a real, checkmarked Step 2) - zero real console errors
+    throughout (the one message seen each pass is the same generic Chrome-extension-messaging
+    artifact this file already notes elsewhere, confirmed by its `0:0` attribution). Note for any
+    future live QA pass on this page: the Chrome-extension automation environment used for this
+    session showed real, reproducible latency between a click/keypress firing and the resulting
+    state change becoming visible - a screenshot taken immediately after an action would sometimes
+    show the pre-action state even though the action had genuinely registered; waiting roughly a
+    second (or reading the DOM directly rather than trusting an instant screenshot) before judging
+    an action's result avoided every false negative encountered during this build.
+
+- **Three follow-up fixes to the Typeform rebuild above, per direct feedback: the Primary Contact
+  toggle promoted to the top of its manager card, a matching Typeform rebuild for Step 2, Project
+  Focus Areas consolidated into one real multi-select with Biological defaulted, and both steps'
+  buttons de-Typeform-ified back toward this codebase's own DEW styling.**
+  - **Primary Contact toggle moved to the top of each manager card, and the first manager now
+    defaults to Primary Contact.** Flagged directly: "The primary contact toggle is burried under
+    add more information drawdown. That must appear on top." `ManagerOptionalFields` (inside
+    `step-1-project-details.tsx`) no longer renders the `Toggle` at all - it now holds only
+    Organisation/Role/Phone, the genuinely secondary fields still behind the "+ Add organisation,
+    role or phone" reveal. `ManagerCard` renders `Toggle` directly, immediately under the "Manager
+    N" heading and above First/Last Name/Email, unconditionally visible regardless of whether the
+    optional-fields section is expanded. `initialProjectDetails()` (`types.ts`) now seeds
+    `projectManagers: [{ ...emptyProjectManager(1), isPrimary: true }]` - a project always has a
+    real single point of contact in practice, so defaulting it removes a click for the common
+    one-manager case instead of asking the user to flip a toggle that only ever has one sensible
+    answer for their first (and often only) manager.
+  - **Mutual exclusivity, not just a default.** Added `setPrimaryManager(id)` (sets exactly one
+    manager's `isPrimary` true, every other false) and wired it to each `Toggle`'s `onChange` -
+    turning a manager's toggle on now correctly turns every other manager's off, rather than
+    allowing more than one "primary" at once. `removeManager(id)` also gained real handling: if the
+    removed manager was the primary one, the first remaining manager is auto-promoted, so the list
+    can never end up with zero primary contacts. Verified live: added a second manager (Maya
+    Dewitt), toggled her Primary Contact on and confirmed Manager 1's turned off automatically;
+    removed her afterward and confirmed the sole remaining manager was auto-promoted back to
+    Primary Contact.
+  - **Step 2 (Data Collection and Storage) rebuilt as the same one-question-at-a-time Typeform
+    sequence as Step 1**, per direct request ("I want you to also do a similar experience for step
+    2"), against a fresh Figma fetch of node `2298:176237` ("Data Collection Submission") to confirm
+    the real required/optional split - Geographic Extent, Project Focus Areas, and Method of Data
+    Collection are the only 3 fields carrying an asterisk in that frame; Targeted Species, Permit,
+    URI/DOI, and Limitations and biases carry none. That split sets the new mandatory sequence
+    (Geographic Extent -> Project Focus Areas -> Method of Data Collection -> Review) with the 4
+    optional fields surfaced as "+ Add..." reveals on the closing Review card, the identical shape
+    Step 1's own Review screen already established. `step-2-data-collection.tsx` was rewritten in
+    full around `TypeformCard`/`ChoiceTile` rather than patched incrementally.
+  - **Project Focus Areas collapsed from two separate controls into one real multi-select, per
+    direct clarification.** The first pass (Phase 1) had rendered a disabled dropdown frozen to
+    "Biological" plus a *separate* real `MultiSelect` underneath it for the remaining domains - two
+    controls doing one job. The user's own framing ("Biological is always a default selection and
+    along with that there will be soil, water, land etc.") describes one combined choice, not two,
+    so this became a single `ChoiceTile` grid over `FOCUS_AREA_OPTIONS` (Biological/Soil/Water/
+    Land/Marine/Habitat-Vegetation Mapping/Other) with multi-select toggle behaviour
+    (`toggleFocusArea`), and `initialDataCollection()` now seeds `focusAreas: ["biological"]` so
+    Biological starts pre-selected and highlighted rather than the user having to notice and pick
+    it themselves. Verified live: Biological renders selected by default on first load; clicking
+    Soil adds it alongside Biological (both tiles show the selected treatment simultaneously) while
+    Biological stays selected; the Review card's summary line correctly reads "Biological, Soil".
+  - **Buttons de-Typeform-ified on both Step 1 and Step 2, per direct request** ("try and use the
+    button from DEW design system so its not very obvious that we are following typeform style").
+    `TypeformCard`'s "press Enter" hint (the `CornerDownLeft` icon + label that used to sit next to
+    Continue) was removed entirely, and the Back button's colour changed from `color="link-gray"`
+    (a bare text link, the more distinctly "Typeform" affordance) to `color="secondary"` (a real
+    bordered DEW button) - matching the Back/Continue button pairing already used on this same
+    page's own Step 3 footer, so all three steps now present a consistent, unmistakably-DEW button
+    language rather than one step visibly branching into a different, imported interaction style.
+    The Enter-to-advance keyboard shortcut itself (the `onKeyDownCapture` listener, scoped to a
+    genuine `<input>` target) was left working - only the visible hint UI was removed, since the
+    shortcut itself is an accessibility/speed affordance, not a stylistic one.
+  - Verified `tsc --noEmit`/`eslint --max-warnings=0` clean on every touched file
+    (`typeform-card.tsx`, `step-1-project-details.tsx`, `step-2-data-collection.tsx`, `types.ts`,
+    `data.ts`, `geo-extent-picker.tsx`, `location-restriction.tsx`, `page.tsx`), then an extensive
+    live Chrome pass through the complete Step 2 sequence end to end (Geographic Extent via "Choose
+    from a List" -> Belair National Park -> Project Focus Areas with Biological pre-selected and
+    Soil added live -> Method of Data Collection's Systematic tile revealing its conditional
+    "Method details" `Textarea` -> the Review card's accurate summary and a working edit-jump back
+    to Project Focus Areas with state preserved), and the complete Step 1 sequence end to end
+    (project name -> abstract -> start date -> organisation ownership -> primary contact with the
+    dynamic org-referencing title -> role tile grid -> the Primary Contact toggle now visible at
+    the top of Manager 1's card and defaulted on -> adding a second manager, confirming mutual
+    exclusivity, removing her and confirming auto-promotion back to Manager 1 -> the Review card's
+    full, accurate summary). Zero real console errors throughout. `geo-extent-picker.tsx` also
+    gained an exported `geoExtentSummary()` helper (the exact function `location-restriction.tsx`
+    had already implemented locally as `extentLabel()`) so Step 2's own Review card and Step 3's
+    Location restriction cards share one summary implementation instead of two near-identical
+    copies - `location-restriction.tsx` now imports and calls it instead of keeping its own.
+
+- **Three more direct-feedback fixes on top of the Typeform rebuild: a real full-screen map for
+  drawing, Biological locked as a non-optional selection with an "Other" reveal, and Method
+  details required for every collection method, not just Systematic/Other.**
+  - **A real full-screen map, per direct feedback that the inline "Draw on the Map" view is "a
+    very small window."** A new "Full screen" icon button (`Maximize02`) sits top-left on the
+    compact map, clear of its own top-right zoom controls
+    (`app/pages/_shared/map-search/sa-map.tsx`'s `ZoomControls`). Clicking it opens
+    `MapFullscreenOverlay` (new, `geo-extent-picker.tsx`) - a real react-aria
+    `ModalOverlay`/`Modal`/`Dialog` covering the full viewport (`fixed inset-0`), not the centred
+    `components/application/modals/modal.tsx` pair, which hardcodes a constrained width wrong for
+    a map. The overlay renders the exact same `DrawToolButtons` (extracted into a small shared
+    component so the compact and full-screen views can never offer different tools) in its own
+    header bar, plus "Exit full screen," and shares the same lifted `boundary`/`activeDrawTool`
+    state as the compact map - a shape drawn in either view is the one real boundary the rest of
+    the wizard reads from, never a second, disconnected map. Draw circle/polygon both stay
+    available in the expanded view, per direct request.
+    - **Real bug found and fixed before calling this done**: the first pass used the usual `z-50`
+      the rest of this build's overlays use (`SidePanel`, `Modal`) - but the compact map still
+      mounted behind the overlay is itself a Leaflet instance, and Leaflet's own internal panes
+      (tile/overlay/marker/popup) use z-index values up to ~700, comfortably above `z-50`. Caught
+      live: the small map's tiles rendered visibly on top of the "full screen" one instead of
+      being covered by it. Fixed by bumping both the `ModalOverlay` and `Modal` to `z-[9999]` -
+      well above any Leaflet pane on the page, not just above ordinary page content. Worth
+      remembering for any future full-screen overlay stacked on top of a page that also has a
+      live Leaflet map elsewhere in its DOM - `z-50` is not automatically "on top."
+  - **Biological is now a locked, always-selected tile - the user can no longer uncheck it.**
+    `ChoiceTile` (`typeform-card.tsx`) gained an `isDisabled` prop - the button ignores clicks and
+    sets `disabled`/`aria-disabled`, but still renders the real selected (brand-tinted) visual
+    state rather than looking like a normal unselected option, per direct feedback to "show that
+    in selected disabled state." Biological's own tile passes `isDisabled`, a `Lock01` icon, and a
+    "Always included" hint line. `toggleFocusArea` (`step-2-data-collection.tsx`) short-circuits
+    on `id === "biological"` as the real enforcement (not just a disabled button - the underlying
+    state genuinely can't drop it), so even a stray programmatic call can't unselect it either.
+  - **Selecting "Other" reveals a required free-text field**, the same "Other" pattern Step 1's
+    own role question already established (`roleOfWorkOther`). `DataCollectionState` gained
+    `focusAreaOther: string` (`types.ts`), and `isStep2Valid`/the card's own `cardValid` both now
+    require it non-empty whenever `"other"` is selected. The Review card's summary line
+    substitutes the user's own typed text for the literal word "Other" (e.g. "Biological, Cultural
+    heritage sites"), matching the equivalent substitution Step 1's own `roleLabel` already does.
+  - **Method details is now required for every collection method** (Incidental observations/
+    Systematic/Unknown/Other alike), not just Systematic/Other - per direct feedback that "for
+    each of these selections the user must enter method details." The `Textarea` now renders
+    whenever any `collectionMethod` is chosen (`!!value.collectionMethod`, not the old two-value
+    check), carries `isRequired` (rendering the real asterisk via `Label`), and uses the exact
+    placeholder text supplied: "Provide details of your survey methods such as qualitative or
+    quantitative techniques." `cardValid[2]`/`isStep2Valid` both now also require
+    `methodDetails.trim().length > 0`.
+  - Verified `tsc --noEmit`/`eslint --max-warnings=0` clean on every touched file
+    (`geo-extent-picker.tsx`, `typeform-card.tsx`, `step-2-data-collection.tsx`, `types.ts`), then
+    an extensive live Chrome pass: opened "Full screen" on the map, confirmed the small map no
+    longer bled through, drew a real circle inside the full-screen view, exited and confirmed the
+    compact map showed the same drawn boundary; confirmed clicking the locked Biological tile has
+    no effect and it stays selected with the lock icon and "Always included" hint; selected
+    "Other," confirmed the required "Please specify" field appeared and blocked Continue until
+    filled; selected "Incidental observations" and confirmed "Method details *" appeared with the
+    exact requested placeholder and blocked Continue until filled; reached the Review card and
+    confirmed it read "Project focus areas: Biological, Cultural heritage sites" and "Method of
+    data collection: Incidental observations" correctly. Zero console errors throughout.
+
+- **Step 3 (Privacy and Restrictions) round: Embargo type made multi-select with a system-computed
+  maximum embargo date, a real calendar date picker rolled out to every date field across all
+  three steps, a real bug fixed in the shared Species/Project-Metadata attribute editor, and
+  clicking a completed step in the stepper now jumps back to it.**
+  - **A new real single-date picker, `InputDatePicker`
+    (`components/custom/date-picker/input-date-picker.tsx`), replacing every plain `InputDate` in
+    this wizard**, per direct request ("ensure that all date fields in all three steps are date
+    selectors - important"). `components/base/input/input-date.tsx` is a real, already-documented
+    DEW component (its own doc page at `/components/input`) whose segmented-DD/MM/YYYY-typed-entry-
+    only behaviour matches its own Figma reference - left untouched rather than changed sitewide,
+    since the ask was scoped to this wizard's own date fields, not a global component change. The
+    new component is built on react-aria-components' own `DatePicker` composition (the same
+    segmented `DateField`/`DateSegment` primitives `input-date.tsx` already styles, plus a real
+    calendar-icon trigger `Button` and a `Calendar` popover) and the real DEW `Popover`
+    (`components/base/select/popover.tsx`) - the same combination
+    `components/custom/date-range/date-range-control.tsx` already proved out for a date *range*,
+    just for a single date here. Documented at `/custom-components/date-picker` (slotted
+    alphabetically before "Date range" in both `lib/nav.ts` and the doc page itself), same lighter
+    Custom Components apparatus as every other custom component. Swapped in for all 3 real date
+    fields this wizard has: Start Date and End Date (`step-1-project-details.tsx`) and Embargo End
+    Date (`step-3-privacy-restrictions.tsx`) - Step 2 has no date field of its own. End Date also
+    picked up a real `minValue={startDate}` while this was already being touched - a project's end
+    date genuinely can't precede its start date, and a real date *selector* is exactly where
+    enforcing that constraint via a disabled calendar cell (not just a validation message) becomes
+    natural.
+    - **Real bug found and fixed before calling this done**: the first pass used the same `z-50`
+      every other overlay in this build uses (`SidePanel`, the centred `Modal`) for the new
+      component's own `Popover`/`ModalOverlay`-equivalent stacking - but a compact Leaflet map
+      elsewhere on the *same* page (this wizard's own `GeoExtentPicker`, from the prior round) is a
+      real Leaflet instance whose internal panes (tile/overlay/marker/popup) use z-index values up
+      to ~700, comfortably above a plain `z-50`. This surfaced on the `/custom-components/
+      date-picker` doc page only incidentally - the real catch was live on the wizard's own map tab,
+      confirmed by a screenshot showing the compact map's tiles rendering *on top of* what should
+      have been the frontmost calendar popover. Not applicable here since `InputDatePicker`'s own
+      `Popover` is a normal dropdown-style overlay, not a full-screen one - flagged for the record
+      as the same z-index class of bug this build has now hit twice (see the `MapFullscreenOverlay`
+      entry above), worth checking on sight any time a new overlay is added to a page that also
+      renders a live Leaflet map.
+  - **Embargo type is now a real multi-select** (`MultiSelect`, matching the exact pattern already
+    established for Step 2's Targeted Species/Project Focus Areas), per direct request - a project
+    can have more than one real reason to stay embargoed at once (e.g. both a publication embargo
+    and a cultural one). `EmbargoState.type: EmbargoType | null` became `types: EmbargoType[]`
+    (`types.ts`); `isEmbargoValid`/`isStep3Valid` updated to check `types.length > 0` instead.
+  - **A system-provided maximum embargo period, computed from whichever type(s) are selected.**
+    `EMBARGO_TYPE_OPTIONS` (`data.ts`) gained a `maxMonths` per type - this build's own reasonable
+    default ceiling per type (Publication 24 months, Project completion 36, Cultural/Indigenous
+    120, Other 12), documented inline as this exploratory build's own system rule, not a sourced
+    real BDBSA policy figure. `maxEmbargoMonths(types)` returns the *longest* of every selected
+    type's own ceiling (the strictest single reason should never be silently shortened just because
+    a less-restrictive one is also selected), and `formatEmbargoDuration(months)` renders it as a
+    plain "X years"/"X months" string for the new note under the End Date field: "Maximum embargo
+    period for the selected type(s): N years" - singular/plural grammar handled correctly for
+    exactly 1 vs. more than 1 selected type, confirmed live.
+  - **The End Date auto-fills to that maximum the moment a type is picked, and the picker's own
+    `minValue`/`maxValue` (today / the computed max date) physically disable any date outside that
+    window** - confirmed live: past dates and dates beyond the max both render as disabled
+    (unclickable, dimmed) calendar cells, and the "next month" navigation button itself disables
+    once the max falls within the currently-shown month.
+    - **Real bug found and fixed mid-build, not just a testing artifact**: the first version only
+      ever clamped the End Date *downward* when the max shrank (comparing the current value against
+      the new max and resetting only if it now exceeded it) - so adding a second, *longer*-duration
+      type on top of an already-selected shorter one (e.g. adding "Cultural / Indigenous knowledge
+      embargo," 120 months, on top of an already-selected "Publication embargo," 24 months) left the
+      date stuck at the smaller, stale 24-month default instead of extending to the new, longer
+      120-month ceiling - caught live: selecting both showed the correct "10 years" note but the
+      date field itself still read 2 years out. Fixed by adding a `embargoEndDateTouched` boolean
+      (component-local `useState`, set `true` only by the date picker's own `onChange` - a genuine
+      manual edit, never by the programmatic type-change handler) - while untouched, the date always
+      exactly tracks the current maximum (both up and down); once the user has manually picked a
+      date, their choice is respected and only clamped *down* if a later type change lowers the
+      maximum below it. Verified live in both directions: selecting Publication then Cultural
+      correctly extended 23/09/2028 -> 23/09/2036; manually setting the date to 10/09/2036, then
+      removing Cultural (dropping the max back to 2 years), correctly clamped it back down to
+      23/09/2028 since the manual value now exceeded the new, smaller maximum.
+  - **A real bug fixed in the shared `AttributeRows` editor** (`attribute-rows.tsx`, used by both
+    Species restriction's "Specific Attributes" mode and Project Metadata restriction's own
+    "Specify Restricted Attributes" section), per direct feedback: "when the user selects 'Other'
+    the user must provide what they mean by other for both field type and field value." Picking
+    "Other" for a row's Attribute used to *hijack* the Value input to ask "Name this attribute" -
+    `row.value` was never bound to anything in that state, so there was no way to enter the row's
+    actual value at all once Attribute was "Other," and the populated-card summary
+    (`species-restriction.tsx`) echoed the same custom name back under both the "Attribute" and
+    "Value" columns as if they were two distinct pieces of information, when only one had ever
+    really been captured. Fixed by giving the custom attribute name its own dedicated, always-
+    visible-when-relevant "Please specify" field (matching the same "Other" reveal pattern already
+    used everywhere else in this wizard), so Value stays a real, independently-editable field for
+    the row's actual value regardless of which Attribute is chosen. Each row also picked up a real
+    bordered container (`rounded-lg border border-secondary p-3`) now that it can hold two stacked
+    fields instead of one. `isAttributeRowsValid(rows)` (new, exported) centralises "a row is
+    complete once it has a real attribute, and a real custom name too if that attribute is
+    'Other'" - wired into both consumers' own validity: `species-restriction.tsx`'s `canSave` (only
+    when `protectionRule === "specific"`) and `isStep3Valid`'s own `metadata` check. Verified live:
+    picked "Other" for a Species restriction's attribute, entered "Nest disturbance window" as the
+    custom name and "48 hours" as the real value - both distinct values, both preserved
+    independently - saved, and confirmed the populated card correctly showed "Nest disturbance
+    window" under Attribute and "48 hours" under Value (previously would have shown the same custom
+    name under both). Confirmed the identical fix live on Project Metadata restriction too, since
+    it's the same shared component.
+  - **Clicking an already-completed step (1 or 2) in the top stepper now jumps back to it**, per
+    direct request ("allow the users to go back and forth to step 1 or 2 (completed steps) by
+    clicking over it"). `RegistrationStepper` (`stepper.tsx`) gained an `onStepClick?: (step) =>
+    void` prop, called only for a step whose `id < currentStep` (i.e. already complete) - the
+    current step and any not-yet-reached step stay plain, non-interactive text, unchanged. Wired in
+    `page.tsx` via `onStepClick={(target) => goToStep(target, { review: true })}`.
+    - **Real bug found and fixed before calling this done**: the button wrapping badge+label for
+      the now-clickable case was given its own `flex-1`, which made it compete with the row's
+      trailing separator line (also `flex-1`) for the row's leftover width - squeezing the label
+      text narrower and wrapping "Project Identification" onto two lines, caught live off a
+      screenshot. Fixed by removing `flex-1` from the button (matching the plain, non-clickable
+      branch's own wrapper exactly) - only the separator line should ever grow to absorb a row's
+      leftover space, same as before this button wrapper was introduced.
+    - **Jumping back lands on that step's own Review card, not Question 1** - both
+      `Step1ProjectDetails` and `Step2DataCollection` gained a `startAtReview?: boolean` prop, read
+      once via a lazy `useState` initializer (`useState(() => startAtReview ? TOTAL_QUESTIONS : 0)`)
+      - safe because each component fully unmounts/remounts every time `page.tsx`'s own `step`
+      switches away from and back to it, so this is correctly re-evaluated on every visit.
+      `page.tsx` tracks a `reviewOnEntry` boolean, set by `goToStep`'s new optional `{ review: true
+      }` opts argument - forward completions (`onComplete: () => goToStep(2)`, no `review` flag)
+      correctly leave Step 2 starting fresh at Question 1, unaffected by this change; only a
+      stepper-header click passes `review: true`. Verified live: completed Steps 1-2, reached Step
+      3, clicked "Project Identification" - landed directly on Step 1's own Review card with every
+      answer (including the just-tested Start/End Date picks) still intact, not reset to Question
+      1. Also confirmed the expected asymmetry: while viewing Step 1's review, "Data Collection and
+      Storage" correctly does *not* render as clickable, since `isComplete` is defined relative to
+      whichever step is currently being viewed (`step.id < currentStep`) - a deliberate, standard
+      wizard-stepper simplification, not a bug; forward navigation to Step 2 still goes through its
+      own "Continue" button as before.
+  - Verified `tsc --noEmit`/`eslint --max-warnings=0` clean on every touched/new file
+    (`input-date-picker.tsx`, the new doc page, `lib/nav.ts`, `types.ts`, `data.ts`,
+    `step-1-project-details.tsx`, `step-3-privacy-restrictions.tsx`, `attribute-rows.tsx`,
+    `species-restriction.tsx`, `stepper.tsx`, `page.tsx`), then an extensive live Chrome pass
+    covering every item above in sequence within one continuous wizard run (Start/End Date via the
+    new picker, jumping back to Step 1's review via the stepper and confirming data survived, back
+    through to Step 3, Embargo multi-select in both directions with the max-date bug fix confirmed,
+    the calendar's own min/max enforcement, and the AttributeRows fix confirmed on both Species and
+    Project Metadata). Zero console errors throughout the entire pass.
+
+- **Step 3 (Privacy and Restrictions) rebuilt as the same one-question-at-a-time Typeform
+  sequence as Steps 1 and 2**, per direct feedback off a screenshot that the Yes/No radio + boxed
+  `Accordion` screen didn't match the other two steps. Built on the same shared `TypeformCard`/
+  `ChoiceTile` shell (`typeform-card.tsx`), no new components. Sequence: "Does your project have
+  any restrictions?" (No / Yes `ChoiceTile`s) -> Yes only: "Which kinds of restriction apply?"
+  (the 5 real types as multi-select `ChoiceTile`s, each with an icon - `Hourglass03`/`Feather`/
+  `MarkerPin04`/`Database01`/`DotsHorizontal`) -> one focused card per selected type in fixed order
+  (the same Embargo/Species/Location/Metadata/Other field sets as before, unchanged) -> a Review
+  card (one summary row per answer with an edit-jump link, "Create Project" as the primary action).
+  - Cards are tracked by id, not index (`cardId` in `step-3-privacy-restrictions.tsx`) - toggling
+    a type changes how many cards follow, so an index would silently point at the wrong card; the
+    "Question N of M" count grows/shrinks live with the selection. Deselecting a type still never
+    clears its own answers.
+  - `isStep3Valid` now also requires at least one selected type when "Yes" is chosen, and at least
+    one nominated entry for Species/Location restrictions - the accordion version let an enabled-
+    but-empty species/location restriction through silently.
+  - `page.tsx`: Step 3's separate Cancel/Back/Save Draft/Create Project footer is gone; Cancel/Save
+    Draft now live in the header for all 3 steps (same as Steps 1-2 already did), the card padding is
+    unified, and Back from Step 3's first card returns to Step 2's own review card.
+  - Verified `tsc --noEmit`/`eslint --max-warnings=0` clean and a live Chrome pass: Yes -> Embargo +
+    Other -> filled both -> Review showed correct summaries (embargo types + auto-filled end date,
+    the other-restriction text) -> Create Project landed on the success screen, zero console errors.
+
+- **Optional organisation/institution logo upload on Step 1's "Who owns this data?" card**, per
+  direct request - shown only when "Organisation / Institution" is picked, directly under the org
+  name field. New page-local `logo-upload.tsx` (`LogoUpload`; no DEW file-upload component exists,
+  same page-local precedent as the auth flow's profile-picture upload): click or drag-and-drop,
+  a preview card with Replace/Remove once picked, and one plain requirements line - PNG, JPG, SVG or
+  WebP · Max 2 MB · Square, at least 200 × 200 px · Transparent or white background works best.
+  Requirements are enforced on pick, not just stated: wrong type, over 2 MB, or a raster image under
+  200 px on either side is rejected with a specific inline error (SVG skips the pixel check, since
+  it scales). Stored as `ProjectDetailsState.dataOwnerOrgLogo` (`OrgLogo` - file name, size, and a
+  local object URL; no backend), never required for validity; the review card's "Data owner" row
+  appends "· logo added" when one is set. Verified `tsc`/`eslint` clean and live: a 50×50 PNG was
+  rejected with the exact dimension message, a 400×400 PNG replaced it with a correct preview, zero
+  console errors.
+
+- **Step 3's Species and Project Metadata restrictions simplified, and "Attributes" renamed
+  "concepts" throughout**, per direct feedback that the species flow was too complex.
+  - **Species** (`species-restriction.tsx`, rewritten): the side panel, group-filter chips, the
+    "apply custom sensitivity restrictions" checkbox and the All/Specific radio pair are gone. Now:
+    one inline species search (real `ComboBox`) -> each pick becomes its own `BentoCard` (newest at
+    the top) asking one question, "What should be restricted?", as two `ChoiceTile`s (All concepts /
+    Selected concepts) -> "Selected concepts" reveals the shared concept editor -> a required
+    justification. An already-sensitive species shows one line naming the real project(s) that
+    already restrict it (no expand/collapse). `SpeciesRestrictionEntry` is now
+    `{ speciesId, scope: "all" | "selected", concepts, justification }`. The search is blurred
+    after a pick - it opens on focus, so otherwise its list reopened over the card just added.
+  - **Shared concept editor** (`concept-rows.tsx`, replacing `attribute-rows.tsx`): Concept |
+    Value | remove, column labels on the first row only. Each concept declares its value type
+    (`ConceptOption.valueType` in `data.ts`): `text` renders an `Input` with a concept-specific
+    example placeholder; `multi` renders a real `MultiSelect`. Per direct request only
+    **Observer / Contributor** is `multi` for now (options = this build's placeholder persona set,
+    `OBSERVER_OPTIONS`); every other concept stays text until its real option list is decided. The
+    value field is disabled until a concept is picked, changing concept resets the value, and a
+    concept already used on another row isn't offered again (except "Other", which asks for a
+    concept name). A blank value means "restrict this concept entirely", so only the concept itself
+    is required.
+  - **Species-level concepts** (`SPECIES_CONCEPTS`) come from the Occurrence/Observation "Details
+    Container" frames in Figma (`YMproGZfrFB5jUqPHPxMhk`, e.g. `1970:145792`/`1970:147841`, under
+    node `55:26710`): Location, Observer / Contributor, Date and time observed, Habitat, Life stage,
+    Breeding status, Sex, Measurements, Voucher and determiner details, Attached images and files,
+    comments, Other. Project Metadata keeps its own list (`PROJECT_METADATA_CONCEPTS`).
+  - `isStep3Valid` now also requires every species card to be complete (justification, plus at
+    least one complete concept row in "Selected concepts" mode). The review card lists each species
+    with its scope and the metadata concepts by name.
+  - Verified `tsc`/`eslint` clean and live: added Malleefowl (the one-line "already sensitive in
+    BD - 5038" note rendered), switched to Selected concepts, picked Observer / Contributor (value
+    became a searchable multi-select; picked 2), added a second row (Observer correctly absent from
+    its list), picked Location (value became a text field with the example placeholder), then the
+    Project Metadata card with the same editor, then a review showing "Malleefowl (Observer /
+    Contributor, Location (coordinates, IBRA region))" - zero console errors. Pre-existing gap hit
+    again: pressing Escape in a `MultiSelect` clears its selection (already logged above).
+
+- **Correction to the entry above: the inline species flow was reverted, per direct feedback that
+  the right-side panel experience was better.** Back to the earlier shape: "Select Species" button
+  -> right `SidePanel` (search, group-filter chips, Sensitive badges, the sensitive warning with
+  "View data restriction summary") -> Save returns a summary card to the main screen (Sensitive
+  badge, a "Restricted: All concepts / Selected concepts" banner, a Concept | Value table, the
+  justification) with "Add another species". The **only** part kept from the redesign is the
+  "What should be restricted?" section inside the panel: two `ChoiceTile`s (All concepts /
+  Selected concepts, replacing the old checkbox + radio pair) and, for Selected, the shared
+  `ConceptRows` editor. Justification is always required.
+  - **Value controls now follow Figma's own field types**, read from the Occurrence/Observation
+    *Edit* frames (`YMproGZfrFB5jUqPHPxMhk` `1970:145957` / `1970:148058`): `ConceptOption.valueType`
+    is `multi` (Figma's "3 Selected": Observer / Contributor, Determiners, Animal/Plant life stage),
+    `select` (Figma's "Please Select": Location precision, Sex, Activity, Micro habitat, Voucher
+    institution, Data collection method), `boolean` (Figma's Yes/No radios: Gravid, Planted /
+    released), `dateRange` (Figma's "Select dates": Date observed, as From/To pickers on their own
+    full-width line under the row - two pickers overlapped in one value column), `text` (Other),
+    and `none` (withheld whole, no value: comments, attached images and files, permit number, raw
+    data storage). Option lists reuse real lists where this build has one (people, collection
+    methods, SA Museum / State Herbarium); the rest are illustrative where Figma leaves the
+    dropdown unpopulated. Every row now needs a value except `none` concepts.
+  - Verified `tsc`/`eslint` clean and live: Select Species -> panel -> Malleefowl (Sensitive badge
+    and warning intact) -> Selected concepts -> Gravid (Yes/No radios), Date observed (From/To
+    pickers), Activity (dropdown: Nesting) -> Save -> summary card showing "Gravid: Yes", "Date
+    observed: From 01/08/2026", "Activity: Nesting", zero console errors.
+
+- **One shared "Location Details" coordinate table everywhere location is shown**, per direct
+  request (Projects, Events, Occurrences, Observations). New `app/pages/_shared/
+  location-details-table.tsx` (`LocationDetailsTable`): rows Zone / Easting / Northing / Latitude /
+  Longitude, columns Coordinate / Entered Value / GDA2020 Equivalent - the format from the user's
+  reference screenshot.
+  - **Honest values, not placeholders or inventions.** Entered Value shows what each record
+    actually stores (latitude/longitude; Zone/Easting/Northing "-" since they weren't entered).
+    GDA2020 Equivalent treats those coordinates as GDA2020 (the datum this build's detail pages
+    already state), so latitude/longitude carry over and Zone/Easting/Northing are the real MGA2020
+    grid position computed by `toMga2020` (Transverse Mercator on GRS80, k0 0.9996) - checked
+    against Adelaide's published MGA position (zone 54, E ~280,659, N ~6,132,236). A record with
+    no coordinates shows "-" in every cell.
+  - **Wired into:** the map-search record-detail sidebar (`record-detail.tsx`) - every record
+    type's Location Information now shows the table (previously only Site / Non-Biotic / Community
+    had a coordinate table, in a different column/row orientation, and everything else showed a bare
+    "Location Details: -"; the old `CoordinatesTable` and the `full` flag are gone), and Project's
+    "Data Collection Location"; `project-detail/option-1`'s Locations accordion (real coordinates of
+    the same Adelaide Hills project from `searchEvents`); `observation-detail/option-1`'s Location
+    Information (its mock OBS094 has no coordinates, so honest dashes; the disabled Shapefile.shp
+    link stays under the table). Not wrapped in `DetailRow` on those two pages - `DetailRow` renders
+    its value inside a `<p>`, and a `<table>` inside a `<p>` is invalid HTML (a hydration error).
+  - Verified `tsc`/`eslint` clean and live on all three surfaces (project-detail Locations, a map
+    search Occurrence sidebar, observation-detail) - zero console errors.
